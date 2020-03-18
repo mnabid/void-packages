@@ -1,0 +1,32 @@
+# Template file for 'gnome-session-properties'
+pkgname=gnome-session-properties
+_pkgname=${pkgname%-properties}
+version=3.10.0
+revision=1
+wrksrc="${_pkgname}-${version}"
+build_style="gnu-configure"
+hostmakedepends="automake gettext-devel intltool glib-devel libtool pkg-config"
+makedepends="dbus-glib-devel gnome-common gtk+3-devel gtk-doc libglib-devel"
+depends="gtk+3 hicolor-icon-theme dbus-glib"
+short_desc="Manage Startup Applications in GNOME"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-2.0-or-later, LGPL-2.0-or-later"
+homepage="https://www.gnome.org"
+distfiles="${GNOME_SITE}/${_pkgname}/${version%.*}/${_pkgname}-${version}.tar.xz"
+checksum=38d90c5d5a33ec8a3002f1e77e201c1554eeb8bbba8923d94fab81b3a8e0696e
+
+pre_configure() {
+	autoreconf -vfi
+}
+
+post_install() {
+	files=$(find "${DESTDIR}" -name session-properties.png -o -name session-properties.svg)
+	for f in ${files}; do
+		mv "${f}" "${f/apps\/session-/apps\/gnome-session-}"
+	done
+
+	sed -ri '/^Icon/ s/session-/gnome-session-/g' \
+	"${DESTDIR}/usr/share/applications/gnome-session-properties.desktop"
+	sed -i 's/NoDisplay=true//g' \
+	"${DESTDIR}/usr/share/applications/gnome-session-properties.desktop"
+}
