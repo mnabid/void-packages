@@ -1,0 +1,20 @@
+# Template file for 'nautilus-admin'
+pkgname=nautilus-admin
+version=0.2.5
+revision=1
+create_wrksrc=yes
+build_style="cmake"
+hostmakedepends="gettext pkg-config"
+depends="nautilus nautilus-python polkit"
+short_desc="Extension for Nautilus to do administrative operations"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/brunonova/${pkgname}"
+distfiles="${homepage}/releases/download/v${version}/${pkgname}_${version}.tar.xz"
+checksum=c32017270c47b797f5279e787b37b8608a1efd4c88c49b6426d6adaedc698f2a
+
+post_install() {
+	vdoc README.md
+	vdoc NEWS
+	vdoc AUTHORS
+}
