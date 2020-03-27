@@ -1,0 +1,13 @@
+diff --git extension/nautilus-admin.py extension/nautilus-admin.py
+index 922a5a6..05e5945 100644
+--- extension/nautilus-admin.py
++++ extension/nautilus-admin.py
+@@ -15,7 +15,7 @@
+ # You should have received a copy of the GNU General Public License
+ # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+-import os, subprocess, urlparse, traceback
++import os, subprocess, urllib.parse, traceback
+ from gi.repository import Nautilus, GObject, Gtk, GLib
+ from gettext import gettext, locale, bindtextdomain, textdomain
+ 
