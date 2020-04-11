@@ -70,6 +70,10 @@ post_install() {
 	vinstall ${FILESDIR}/${pkgname}.conf 644 etc/${pkgname}
 	vinstall ${FILESDIR}/50-org.freedesktop.NetworkManager.rules 644 \
 		/usr/share/polkit-1/rules.d
+	vmkdir etc/${pkgname}/conf.d
+	for file in ${FILESDIR}/conf.d/*; do
+		vinstall ${file} 644 etc/${pkgname}/conf.d
+	done
 	vsv ${pkgname}
 }
 
