@@ -1,0 +1,13 @@
+diff --git src/wl/sys/wl_linux.c src/wl/sys/wl_linux.c
+index 1cb0874..72bf429 100644
+--- src/wl/sys/wl_linux.c
++++ src/wl/sys/wl_linux.c
+@@ -219,7 +219,7 @@ module_param(nompc, int, 0);
+ #define to_str(s) #s
+ #define quote_str(s) to_str(s)
+ 
+-#define BRCM_WLAN_IFNAME eth%d
++#define BRCM_WLAN_IFNAME wlan%d
+ 
+ static char intf_name[IFNAMSIZ] = quote_str(BRCM_WLAN_IFNAME);
+ 

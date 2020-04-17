@@ -1,0 +1,12 @@
+diff --git src/wl/sys/wl_cfg80211_hybrid.c src/wl/sys/wl_cfg80211_hybrid.c
+index 06ecccc..ce24a6a 100644
+--- src/wl/sys/wl_cfg80211_hybrid.c
++++ src/wl/sys/wl_cfg80211_hybrid.c
+@@ -1446,7 +1446,6 @@ wl_cfg80211_get_station(struct wiphy *wiphy, struct net_device *dev,
+ 
+ 	if (memcmp(mac, wl->profile->bssid, ETHER_ADDR_LEN)) {
+ 		WL_ERR(("Wrong Mac address, mac = %pM   profile =%pM\n", mac, wl->profile->bssid));
+-		return -ENOENT;
+ 	}
+ 
+ 	err = wl_dev_ioctl(dev, WLC_GET_RATE, &rate, sizeof(rate));
