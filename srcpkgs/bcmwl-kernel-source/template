@@ -1,0 +1,50 @@
+# Template file for 'bcmwl-kernel-source'
+_bcmwlVersion=6.30.223.271+bdcom
+_bcmwlRevision=0ubuntu6
+
+pkgname=bcmwl-kernel-source
+version="${_bcmwlVersion:0:-6}.${_bcmwlRevision:7}"
+revision=1
+archs="x86_64"
+repository=nonfree
+hostmakedepends="tar xz"
+depends="dkms"
+conflicts="broadcom-wl-dkms>=0"
+dkms_modules="bcmwl ${_bcmwlVersion}"
+
+short_desc="Broadcom proprietary wireless drivers for Ubuntu"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="custom:Proprietary Broadcom license"
+homepage="https://packages.ubuntu.com/groovy/bcmwl-kernel-source"
+distfiles="${UBUNTU_SITE}/restricted/b/bcmwl/${pkgname}_${_bcmwlVersion}-${_bcmwlRevision}_amd64.deb"
+checksum=7416a575b9960be79fc70c62129e7115c22192763bee3a043b6d2b231b1f5280
+patch_args="-Np1"
+_filename="${pkgname}_${_bcmwlVersion}-${_bcmwlRevision}_amd64.deb"
+
+do_extract() {
+	mkdir -p ${DESTDIR}
+	ar x ${XBPS_SRCDISTDIR}/${pkgname}-${version}/${_filename}
+	mkdir data && tar xf data.tar.xz -C data
+}
+
+do_install() {
+	mv ${wrksrc}/data/usr ${DESTDIR}
+
+	# modules-load.d(5) file.
+	vmkdir usr/lib/modules-load.d
+	echo "bcmwl" > ${DESTDIR}/usr/lib/modules-load.d/bcmwl.conf
+	chmod 644 ${DESTDIR}/usr/lib/modules-load.d/bcmwl.conf
+
+	# Blacklist OSS broadcom modules.
+	vmkdir usr/lib/modprobe.d
+	printf '' > ${DESTDIR}/usr/lib/modprobe.d/bcmwl.conf
+	for module in b43{,legacy} ssb bcm{43xx,a} brcm{80211,fmac,smac}; do
+		echo "blacklist $module" >> ${DESTDIR}/usr/lib/modprobe.d/bcmwl.conf
+	done
+
+	chmod 644 ${DESTDIR}/usr/lib/modprobe.d/bcmwl.conf
+}
+
+post_install() {
+	vlicense ${DESTDIR}/usr/src/bcmwl-${_bcmwlVersion}/lib/LICENSE.txt
+}
