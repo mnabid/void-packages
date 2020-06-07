@@ -1,0 +1,51 @@
+# Template file for 'openssl-optional'
+_pkgname=openssl
+pkgname=${_pkgname}-optional
+version=1.1.1g
+revision=1
+archs="i686 x86_64"
+wrksrc=${_pkgname}-${version}
+build_style=configure
+configure_script="./Configure"
+configure_args="--prefix=/opt/${_pkgname} --libdir=lib shared no-ssl3-method"
+make_build_args='MAKEDEPPROG="$(CC)'
+hostmakedepends="perl"
+short_desc="Toolkit for Secure Sockets Layer and Transport Layer Security (can be installed alongside LibreSSL)"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="OpenSSL-License"
+homepage="https://www.openssl.org"
+distfiles="https://www.openssl.org/source/${_pkgname}-${version}.tar.gz"
+checksum=ddb04774f1e32f0c49751e21b67216ac87852ceb056b75209af2443400636d46
+
+case $XBPS_TARGET_MACHINE in
+	x86_64*) configure_args+=" enable-ec_nistp_64_gcc_128 linux-x86_64 -Wa,--noexecstack ${CPPFLAGS} ${CFLAGS} ${LDFLAGS}";;
+	i686*) configure_args+=" linux-elf -Wa,--noexecstack ${CPPFLAGS} ${CFLAGS} ${LDFLAGS}"
+esac
+
+pre_configure() {
+	echo $configure_args
+}
+
+pre_build() {
+	make ${makejobs} depend
+}
+
+post_install() {
+	vmkdir usr/lib
+	# symlink libssl.so.1.1 and libcrypto.so.1.1 to /usr/lib
+	for _lib in lib{crypto,ssl}.so.1.1; do
+		ln -sfv /opt/${_pkgname}/lib/${_lib} ${DESTDIR}/usr/lib/${_lib}
+	done
+}
+
+openssl-optional-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove opt/${_pkgname}/share/man/man3
+		vmove opt/${_pkgname}/include
+		vmove opt/${_pkgname}/lib/pkgconfig
+		vmove "opt/${_pkgname}/lib/*.a"
+		vmove "opt/${_pkgname}/lib/*.so"
+	}
+}
