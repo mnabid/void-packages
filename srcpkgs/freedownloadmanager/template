@@ -1,0 +1,33 @@
+# Template file for 'freedownloadmanager'
+pkgname=freedownloadmanager
+version=6.10.0.3016
+revision=1
+archs="x86_64"
+repository=nonfree
+restricted=yes
+
+hostmakedepends="tar xz curl python3 python3-html2text python3-setuptools"
+depends="openssl-optional xdg-utils ffmpeg"
+short_desc="Powerful modern download accelerator and organizer"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="custom:Freeware"
+homepage="https://www.freedownloadmanager.org"
+distfiles="http://debrepo.${pkgname}.org/pool/main/f/${pkgname}/${pkgname}_${version}_amd64.deb"
+checksum=3178f4472ad53304db942d76c4ab12c7ce56ed24816d1c759a425acea0df81dd
+noshlibprovides=yes
+noverifyrdeps=yes
+nostrip=yes
+
+do_extract() {
+	ar x ${XBPS_SRCDISTDIR}/${pkgname}-${version}/${pkgname}_${version}_amd64.deb
+	mkdir -p ${DESTDIR}
+}
+
+do_install() {
+	tar -xf data.tar.xz -C ${DESTDIR}
+}
+
+post_install() {
+	curl "https://www.freedownloadmanager.org/privacy.htm" | html2text >> EULA.md
+	vlicense EULA.md
+}
