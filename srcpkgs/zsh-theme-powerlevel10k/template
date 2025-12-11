@@ -1,0 +1,66 @@
+# Template file for 'zsh-theme-powerlevel10k'
+pkgname=zsh-theme-powerlevel10k
+version=1.20.15+20260107
+revision=1
+_p10kver=efc9ddd9b615a0042b5bcc36f97f070ca6fdf09e
+_libgit2ver=tag-2ecf33948a4df9ef45a66c68b8ef24a5e60eaac6
+archs="x86_64 aarch64"
+create_wrksrc=yes
+hostmakedepends="cmake git zsh"
+depends="zsh"
+short_desc="Zsh theme emphasizing speed, flexibility and out-of-the-box experience"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://github.com/romkatv/powerlevel10k"
+distfiles="https://github.com/romkatv/powerlevel10k/archive/${_p10kver}.tar.gz>powerlevel10k-${_p10kver}.tar.gz
+	https://github.com/romkatv/libgit2/archive/${_libgit2ver}.tar.gz>libgit2-${_libgit2ver}.tar.gz"
+checksum="098af5d3ce8181def4456200c6f8aa286012eecf9fb947d3bc035313e2b354d4
+	4ce11d71ee576dbbc410b9fa33a9642809cc1fa687b315f7c23eeb825b251e93"
+ignore_elf_dirs="/usr/share/zsh-theme-powerlevel10k"
+
+do_build() {
+	# Build the bundled libgit2
+	cd ${wrksrc}/libgit2-${_libgit2ver}
+	cmake . -Wno-dev \
+		-DCMAKE_BUILD_TYPE=None \
+		-DZERO_NSEC=ON \
+		-DTHREADSAFE=ON \
+		-DUSE_BUNDLED_ZLIB=ON \
+		-DREGEX_BACKEND=builtin \
+		-DUSE_HTTP_PARSER=builtin \
+		-DUSE_SSH=OFF \
+		-DUSE_HTTPS=OFF \
+		-DBUILD_CLAR=OFF \
+		-DUSE_GSSAPI=OFF \
+		-DUSE_NTLMCLIENT=OFF \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DENABLE_REPRODUCIBLE_BUILDS=ON \
+		${CONFIGURE_ARGS}
+	make ${makejobs}
+
+	# Build gitstatus
+	cd ${wrksrc}/powerlevel10k-${_p10kver}/gitstatus
+	export CXXFLAGS="${CXXFLAGS} -I${wrksrc}/libgit2-${_libgit2ver}/include -DGITSTATUS_ZERO_NSEC -D_GNU_SOURCE"
+	export LDFLAGS="${LDFLAGS} -L${wrksrc}/libgit2-${_libgit2ver}"
+	make ${makejobs}
+}
+
+do_install() {
+	cd ${wrksrc}/powerlevel10k-${_p10kver}
+	vmkdir usr/share/${pkgname}
+	vcopy . usr/share/${pkgname}
+	vlicense LICENSE
+
+	# Clean up build artifacts and unnecessary files
+	cd ${DESTDIR}/usr/share/${pkgname}
+	rm -rf gitstatus/{obj,src,build,deps,mbuild,.gitignore,.gitattributes,Makefile}
+	rm -rf gitstatus/usrbin/.gitkeep
+	rm -f gitstatus/.clang-format
+	rm -rf gitstatus/.vscode
+	rm -f {.gitattributes,.gitignore}
+
+	# Optimize zsh scripts
+	for file in *.zsh-theme internal/*.zsh gitstatus/*.zsh gitstatus/install; do
+		zsh -fc "emulate zsh -o no_aliases && zcompile -R -- $file.zwc $file"
+	done
+}
