@@ -1,0 +1,46 @@
+# Template file for 'freedownloadmanager'
+pkgname=freedownloadmanager
+version=6.33.1.6648
+revision=1
+archs="x86_64"
+hostmakedepends="curl"
+depends="ffmpeg gst-plugins-base1 libtorrent openssl xdg-utils"
+short_desc="Powerful modern download accelerator and organizer"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="custom:Freeware"
+homepage="https://www.freedownloadmanager.org"
+distfiles="http://debrepo.${pkgname}.org/pool/main/f/${pkgname}/${pkgname}_${version}_amd64.deb"
+checksum=862b7d46447f8057d4e16273ee5764a60dedb1def638aaebb59d717823acd772
+repository=nonfree
+restricted=yes
+noshlibprovides=yes
+noverifyrdeps=yes
+nostrip=yes
+
+do_extract() {
+	bsdtar -xf ${XBPS_SRCDISTDIR}/${pkgname}-${version}/${pkgname}_${version}_amd64.deb
+	mkdir -p ${DESTDIR}
+}
+
+do_install() {
+	bsdtar -xf data.tar.xz -C ${DESTDIR}
+
+	# Create /usr/bin symlink
+	vmkdir usr/bin
+	ln -sf /opt/freedownloadmanager/fdm "${DESTDIR}/usr/bin/fdm"
+
+	# Install Icon symlink
+	vmkdir usr/share/icons/hicolor/256x256/apps
+	ln -sf /opt/freedownloadmanager/icon.png \
+		"${DESTDIR}/usr/share/icons/hicolor/256x256/apps/freedownloadmanager.png"
+
+	# Fix .desktop file
+	local _desktop="${DESTDIR}/usr/share/applications/freedownloadmanager.desktop"
+	sed -i 's|/opt/freedownloadmanager/icon.png|freedownloadmanager|g' "$_desktop"
+	sed -i 's|/opt/freedownloadmanager/fdm|/usr/bin/fdm|g' "$_desktop"
+	sed -i '/^Exec=/a StartupWMClass=fdm' "$_desktop"
+
+	# Bundle license file with the package
+	curl -O https://www.freedownloadmanager.org/privacy.htm
+	vlicense privacy.htm
+}
