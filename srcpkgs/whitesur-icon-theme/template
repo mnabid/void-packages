@@ -1,0 +1,20 @@
+# Template file for 'whitesur-icon-theme'
+pkgname=whitesur-icon-theme
+version=20251227
+revision=1
+_commit=bab5833b5cae200bccb786a2d3d6afa2201e7806
+depends="hicolor-icon-theme"
+short_desc="MacOS Big Sur style icon theme for linux desktops"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/vinceliuice/WhiteSur-icon-theme"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=f986b09d202550a621ab56fa6d30c80418dc79e51ee1fa665f93d2b57166d041
+nostrip=yes
+
+do_install() {
+	vmkdir usr/share/icons
+	# Remove gtk-update-icons-cache, it'll be run automatically by xbps
+	sed -i '/gtk-update-icon-cache/ d' install.sh
+	./install.sh -a -d "${DESTDIR}/usr/share/icons"
+}
