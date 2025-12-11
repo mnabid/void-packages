@@ -1,0 +1,22 @@
+# Template file for 'reversal-icon-theme'
+pkgname=reversal-icon-theme
+version=20260317
+revision=1
+_commit=2c8122287e3bad5a6bf860ddd8c7e3b78cf4d451
+depends="hicolor-icon-theme"
+short_desc="Colorful Design Rectangle icon theme for linux desktops"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/yeyushengfan258/Reversal-icon-theme"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=3053cef3034a424be0dc5a81a70550c6f9653e8839b1a1bdc13fbd19fb11c344
+nostrip=yes
+
+do_install() {
+	vmkdir usr/share/icons
+	# Remove gtk-update-icons-cache, it'll be run automatically by xbps
+	sed -i '/gtk-update-icon-cache/ d' install.sh
+	./install.sh -a -d "${DESTDIR}/usr/share/icons"
+	# Fall back to WhiteSur in case of missing icons
+	sed -i '/Inherits/ s/=/=WhiteSur,/' "${DESTDIR}/usr/share/icons"/Reversal*/index.theme
+}
