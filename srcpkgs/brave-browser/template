@@ -1,0 +1,58 @@
+# Template file for 'brave-browser'
+pkgname=brave-browser
+version=1.87.190
+revision=1
+archs="x86_64 aarch64"
+create_wrksrc=yes
+depends="alsa-lib desktop-file-utils gtk+3 hicolor-icon-theme libnotify libXScrnSaver nss xdg-utils"
+short_desc="Web browser that blocks ads and trackers by default"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MPL-2.0 AND BSD-3-Clause"
+homepage="https://brave.com"
+nostrip=yes
+skiprdeps="/opt/brave/libqt5_shim.so /opt/brave/libqt6_shim.so"
+
+case "$XBPS_TARGET_MACHINE" in
+x86_64)
+	distfiles="https://github.com/brave/brave-browser/releases/download/v${version}/brave-browser-${version}-linux-amd64.zip"
+	checksum=5f0bfc212ec497a576843c758525fe23cf22ecfaf80f911ab5f9df17b933c723
+	;;
+aarch64)
+	distfiles="https://github.com/brave/brave-browser/releases/download/v${version}/brave-browser-${version}-linux-arm64.zip"
+	checksum=5f4a9534b34ab3488ae19043d1a71f433f31b8dc169e92a9b5cecd78dfd44e77
+	;;
+*)
+	broken="No distfiles available for this target"
+	;;
+esac
+
+do_install() {
+	# Install the main application to /opt/brave
+	vmkdir opt/brave
+	vcopy * opt/brave
+
+	# Fix permissions for SUID sandbox
+	chmod 4755 "${DESTDIR}/opt/brave/chrome-sandbox"
+
+	# Install the wrapper script
+	vbin "${FILESDIR}/brave.sh" brave
+
+	# Install the .desktop file
+	vinstall "${FILESDIR}/brave-browser.desktop" 644 usr/share/applications
+
+	# Install licenses
+	vlicense LICENSE
+
+	# Install icons
+	for size in 16 24 32 48 64 128 256; do
+		local _src="${DESTDIR}/opt/brave/product_logo_${size}.png"
+		local _dest="usr/share/icons/hicolor/${size}x${size}/apps"
+
+		if [ -f "$_src" ]; then
+			vinstall "$_src" 644 "$_dest" brave-desktop.png
+		fi
+	done
+
+	# Remove unused cron
+	rm -rf "${DESTDIR}/opt/brave/cron"
+}
