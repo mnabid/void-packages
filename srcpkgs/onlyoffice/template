@@ -1,0 +1,49 @@
+# Template file for 'onlyoffice'
+pkgname=onlyoffice
+version=9.4.0
+revision=1
+archs="x86_64 aarch64"
+create_wrksrc=yes
+depends="alsa-lib desktop-file-utils gstreamer1 gst-plugins-base1 gst-plugins-ugly1
+ gtk+3 libcurl libXScrnSaver nspr nss libpulseaudio dejavu-fonts-ttf liberation-fonts-ttf"
+short_desc="Office suite that combines text, spreadsheet and presentation editors"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="AGPL-3.0-only"
+homepage="https://www.onlyoffice.com/"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+x86_64)
+	distfiles="https://github.com/ONLYOFFICE/DesktopEditors/releases/download/v${version}/onlyoffice-desktopeditors_amd64.deb"
+	checksum=4271434e81be42b1559fd989d24bf6d413482f278dc6a5e328202a4fc1a18649
+	;;
+aarch64)
+	distfiles="https://github.com/ONLYOFFICE/DesktopEditors/releases/download/v${version}/onlyoffice-desktopeditors_arm64.deb"
+	checksum=ce141a103051e220a89839dd5dc8511172ae5b989e8de9bda0e07c34b0b7702c
+	;;
+*)
+	broken="No distfiles available for this target"
+	;;
+esac
+
+do_install() {
+	vcopy opt .
+	vcopy usr .
+
+	# Fix document opening via .desktop file
+	sed -i '/Exec/ s/%U/%F/' "${DESTDIR}/usr/share/applications/onlyoffice-desktopeditors.desktop"
+
+	# Handle icons
+	find "${DESTDIR}/opt/onlyoffice/desktopeditors" -maxdepth 1 -type f -name 'asc-de-*.png' | while read -r _file; do
+		# Extract resolution from filename (e.g., asc-de-48.png -> 48)
+		local _res
+		_res=$(basename "$_file" .png | sed 's/^.*-//')
+
+		# Create directory and symlink
+		vmkdir "usr/share/icons/hicolor/${_res}x${_res}/apps"
+		ln -sf "/opt/onlyoffice/desktopeditors/asc-de-${_res}.png" \
+			"${DESTDIR}/usr/share/icons/hicolor/${_res}x${_res}/apps/onlyoffice-desktopeditors.png"
+	done
+
+	vlicense "${DESTDIR}/opt/onlyoffice/desktopeditors/LICENSE.txt"
+}
