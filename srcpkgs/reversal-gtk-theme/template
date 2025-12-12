@@ -1,0 +1,27 @@
+# Template file for 'reversal-gtk-theme'
+pkgname=reversal-gtk-theme
+version=20250514
+revision=1
+_commit=50936953e53301c39881263563b5396a0e56667e
+hostmakedepends="sassc"
+depends="gtk-engine-murrine"
+short_desc="Reversal like theme for all gtk based desktops"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/yeyushengfan258/Reversal-gtk-theme"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=ea1429168c9d6c3c6adbba85d003a8570f0bf757a2db072634da580d96ae556e
+nostrip=yes
+
+do_install() {
+	# Don't call clean_theme function
+	vsed -i 's/clean_theme && install_theme/install_theme/g' install.sh
+
+	# Run the upstream installer
+	vmkdir usr/share/themes
+	./install.sh -t all --tweaks black -d "${DESTDIR}/usr/share/themes"
+
+	# Install Firefox theme assets
+	vmkdir usr/share/doc/${pkgname}
+	vcopy src/other/firefox usr/share/doc/${pkgname}
+}
