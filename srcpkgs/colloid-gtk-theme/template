@@ -1,0 +1,27 @@
+# Template file for 'colloid-gtk-theme'
+pkgname=colloid-gtk-theme
+version=0.0.20260822
+revision=1
+_commit=fe11342f37f124f1b29d44cf33e9a06053f4bba2
+hostmakedepends="sassc"
+depends="gtk-engine-murrine"
+short_desc="Modern GTK theme for Linux"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/vinceliuice/Colloid-gtk-theme"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=385d29fcf256b69891b3e43e81695c938b4ec3a46628fc4efbfbed06bd4c1520
+nostrip=yes
+
+do_install() {
+	# Don't call clean_theme function
+	vsed -i 's/clean_theme && install_theme/install_theme/g' install.sh
+
+	# Run the upstream installer
+	vmkdir usr/share/themes
+	./install.sh -t all --tweaks black -d "${DESTDIR}/usr/share/themes"
+
+	# Install Firefox theme assets
+	vmkdir usr/share/doc/${pkgname}
+	vcopy src/other/firefox usr/share/doc/${pkgname}
+}
