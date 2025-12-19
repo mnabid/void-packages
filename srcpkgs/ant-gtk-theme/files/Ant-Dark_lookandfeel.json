@@ -1,0 +1,27 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "eliverlara@gmail.com",
+                "Name": "EliverLara"
+            }
+        ],
+        "Category": "Plasma Look And Feel",
+        "Description": "Ant-Dark Look and Feel",
+        "Id": "Ant-Dark",
+        "License": "GPL 3+",
+        "Name": "Ant-Dark",
+        "Website": "https://github.com/EliverLara/Ant/tree/master/kde/Dark",
+        "EnabledByDefault": true,
+        "Version": "0.1",
+        "X-KPackage-Dependencies": [
+            "kns://colorschemes.knsrc/api.kde-look.org/1464285",
+            "kns://plasma-themes.knsrc/api.kde-look.org/1464321",
+            "kns://aurorae.knsrc/api.kde-look.org/1464309",
+            "kns://sddmtheme.knsrc/api.kde-look.org/1464300",
+            "kns://wallpaper.knsrc/api.kde-look.org/1473492",
+            "kns://icons.knsrc/api.kde-look.org/1640981"
+        ]
+    }
+}
