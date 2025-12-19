@@ -1,0 +1,19 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "yeyushengfan258@outlook.com",
+                "Name": "yeyushengfan258"
+            }
+        ],
+        "Category": "Plasma Theme",
+        "Dependencies": [],
+        "Description": "Reversal-alt theme for plasma",
+        "EnabledByDefault": true,
+        "Id": "Reversal-alt",
+        "License": "GPL3.0",
+        "Name": "Reversal-alt",
+        "Version": "0.4",
+        "Website": "https://github.com/yeyushengfan258/Reversal-kde"
+    }
+}
