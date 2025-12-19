@@ -1,0 +1,28 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "yeyushengfan258@aliyun.com",
+                "Name": "yeyushengfan258"
+            }
+        ],
+        "Category": "Plasma Look And Feel",
+        "Description": "Reversal theme for kde plasma",
+        "Id": "com.github.yeyushengfan258.Reversal",
+        "License": "GPL3.0",
+        "Name": "Reversal",
+        "Website": "https://github.com/yeyushengfan258/Reversal-kde",
+        "Keywords": "Desktop;Workspace;Appearance;Look and Feel;Logout;Lock;Suspend;Shutdown;Hibernate;",
+        "X-Plasma-MainScript": "defaults",
+        "X-KPackage-Dependencies": [
+            "kns://colorschemes.knsrc/api.kde-look.org/1471810",
+            "kns://plasma-themes.knsrc/api.kde-look.org/1471812",
+            "kns://aurorae.knsrc/api.kde-look.org/1471807",
+            "kns://icons.knsrc/api.kde-look.org/1340791",
+            "kns://wallpaper.knsrc/api.kde-look.org/1471804",
+            "kns://sddmtheme.knsrc/api.kde-look.org/1471809",
+            "kns://xcursor.knsrc/api.kde-look.org/1421622"
+        ]
+    }
+}
