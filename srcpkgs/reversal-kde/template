@@ -1,0 +1,47 @@
+# Template file for 'reversal-kde'
+pkgname=reversal-kde
+version=20220102
+revision=1
+_commit=2f264d0bb78499f04383151d9f248617c83f3819
+depends="kvantum"
+short_desc="Materia Design theme for KDE Plasma desktop"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/yeyushengfan258/Reversal-kde"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=133c98d763da6eb516a7d99b5d86f776d10ce59ee35e24a0d8baf93bf8c6dc86
+nostrip=yes
+
+do_install() {
+	# Window Decorations
+	vmkdir /usr/share/aurorae/themes
+	vcopy "aurorae/*" usr/share/aurorae/themes
+
+	# Kvantum Theme
+	vmkdir /usr/share/Kvantum
+	vcopy "Kvantum/*" usr/share/Kvantum
+
+	# Color Schemes
+	vmkdir /usr/share/color-schemes
+	vcopy "color-schemes/*" usr/share/color-schemes
+
+	# Global Theme & Plasma Style
+	vmkdir /usr/share/plasma
+	vcopy "plasma/*" usr/share/plasma
+	# KDE Plasma 6 switched to metadata.json from metadata.desktop
+	for _var in '' '-alt' '-dark'; do
+		vcopy "${FILESDIR}/Reversal${_var}_lookandfeel.json" \
+			"usr/share/plasma/look-and-feel/com.github.yeyushengfan258.Reversal${_var}/metadata.json"
+		vcopy "${FILESDIR}/Reversal${_var}_desktoptheme.json" \
+			"usr/share/plasma/desktoptheme/Reversal${_var}/metadata.json"
+	done
+
+	# Wallpapers
+	vmkdir /usr/share/wallpapers
+	vcopy "wallpaper/*" usr/share/wallpapers
+
+	# SDDM Themes
+	vmkdir /usr/share/sddm/themes
+	vcopy "sddm/Reversal" usr/share/sddm/themes
+	vcopy "sddm-dark/Reversal-dark" usr/share/sddm/themes
+}
