@@ -1,0 +1,68 @@
+# Template file for 'space-gtk-theme'
+pkgname=space-gtk-theme
+version=0.0.20260806
+revision=1
+_variants="Space-light Space-dark Space-transparency"
+_commit_light=c4598b3527bd02d95699bf535821c40bf467a371
+_commit_dark=e9da7bbf087506e814e012f7fade77ee37f9e7a5
+_commit_transparency=8442ac5c03ffca29d6168110d7ce2318bd45f294
+hostmakedepends="inkscape optipng python3"
+depends="gtk-engine-murrine"
+short_desc="Flat and light theme with a modern look"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/EliverLara/Space"
+distfiles="
+ ${homepage}/archive/${_commit_light}.tar.gz>Space-light-${version}.tar.gz
+ ${homepage}/archive/${_commit_dark}.tar.gz>Space-dark-${version}.tar.gz
+ ${homepage}/archive/${_commit_transparency}.tar.gz>Space-transparency-${version}.tar.gz"
+checksum="
+ 73584f315d354f56c4d23e01f77425ff04613fe8bde6111b9be88c06d10b491d
+ 561cb01031b3389a1e78d6e40c0a258af30e8491c57738c06532165f05842d41
+ d8beba6d62a0e335e79e61e33847431b6d469637ec94d4684e67b9a664c8a0f1"
+
+nostrip=yes
+
+_print_msg() {
+	printf "\033[1;32m=> %s\033[0m\n" "$1"
+}
+
+do_extract() {
+	for _var in ${_variants}; do
+		_print_msg "Extracting ${_var}..."
+		mkdir -p "${wrksrc}/${_var}"
+		vsrcextract -C "${wrksrc}/${_var}" --strip-components=1 ${_var}-${version}.tar.gz
+	done
+}
+
+do_build() {
+	for _var in ${_variants}; do
+		_print_msg "Building variant: ${_var}..."
+		cd "${wrksrc}/${_var}"
+
+		_print_msg "Rendering GTK2 assets..."
+		( cd gtk-2.0 && ./render-assets.sh ) >/dev/null 2>&1
+
+		_print_msg "Rendering GTK3/4 assets..."
+		( cd src && ./render-gtk3-assets.py && ./render-gtk3-assets-hidpi.py ) >/dev/null 2>&1
+
+		_print_msg "Rendering WM assets..."
+		( cd src &&./render-wm-assets.py && ./render-wm-assets-hidpi.py ) >/dev/null 2>&1
+	done
+}
+
+do_install() {
+	for _var in ${_variants}; do
+		_print_msg "Installing variant: ${_var}..."
+		cd "${wrksrc}/${_var}"
+
+		vmkdir "usr/share/themes/${_var}"
+		for _file in assets cinnamon gnome-shell gtk-2.0 gtk-3.0 gtk-4.0 metacity-1 xfwm4 index.theme; do
+			vcopy "${_file}" "usr/share/themes/${_var}"
+		done
+	done
+
+	# Cleanup redundant files not needed in the package
+	_print_msg "Cleaning redundant files..."
+	find "${DESTDIR}/usr/share/themes" -type f \( -name "*.py" -o -name "*.sh" -o -name "*.fish" \) -delete
+}
