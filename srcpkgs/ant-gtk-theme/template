@@ -1,0 +1,93 @@
+# Template file for 'ant-gtk-theme'
+pkgname=ant-gtk-theme
+version=20251222
+revision=1
+_commit=eb03987f8773a5d715c4f6d979341d05f4d45e92
+hostmakedepends="inkscape optipng python3"
+depends="gtk-engine-murrine"
+short_desc="Flat and light theme with a modern look"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/EliverLara/Ant"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=80ed967a6de71226ca3368a9a6f72a4e0c12a3497b8dd02d6d6246bf68a6222c
+nostrip=yes
+
+_print_msg() {
+	printf "\033[1;32m=> %s\033[0m\n" "$1"
+}
+
+do_build() {
+	_print_msg "Rendering GTK2 assets..."
+	( cd gtk-2.0 && ./render-assets.sh ) >/dev/null 2>&1
+
+	_print_msg "Rendering GTK3 assets..."
+	( cd gtk-3.20/assets && ./render-gtk3-assets.py && ./render-gtk3-assets-hidpi.py ) >/dev/null 2>&1
+
+	_print_msg "Rendering GTK4 assets..."
+	( cd gtk-4.0/assets && ./render-gtk3-assets.py &&./render-gtk3-assets-hidpi.py ) >/dev/null 2>&1
+
+	_print_msg "Rendering WM assets..."
+	( cd src &&./render-wm-assets.py && ./render-wm-assets-hidpi.py ) >/dev/null 2>&1
+}
+
+do_install() {
+	vmkdir usr/share/themes/Ant
+	_print_msg "Installing GTK assets..."
+	for _file in assets cinnamon gnome-shell gtk-2.0 gtk-3.0 gtk-3.20 gtk-4.0 metacity-1 unity xfwm4 index.theme; do
+		vcopy "${_file}" usr/share/themes/Ant
+	done
+
+	_print_msg "Installing QT assets..."
+	# Window Decorations
+	vmkdir usr/share/aurorae/themes
+	vcopy "kde/Dark/aurorae/*" usr/share/aurorae/themes
+
+	# Kvantum
+	vmkdir usr/share/Kvantum
+	vcopy "kde/Dark/kvantum/*" usr/share/Kvantum
+
+	# Color Schemes
+	vmkdir usr/share/color-schemes
+	vcopy "kde/Dark/color-schemes/*" usr/share/color-schemes
+
+	# Icons
+	vmkdir usr/share/icons
+	vcopy "kde/Dark/icons/*" usr/share/icons
+
+	# Konsole
+	vmkdir usr/share/konsole
+	vcopy "kde/Dark/konsole/*" usr/share/konsole
+
+	# Global Theme & Plasma Style
+	vmkdir usr/share/plasma
+	vcopy "kde/Dark/plasma/*" usr/share/plasma
+	# KDE Plasma 6 switched to metadata.json from metadata.desktop
+	vcopy "${FILESDIR}/Ant-Dark_lookandfeel.json" usr/share/plasma/look-and-feel/Ant-Dark/metadata.json
+	vcopy "${FILESDIR}/Ant-Dark_desktoptheme.json" usr/share/plasma/desktoptheme/Ant-Dark/metadata.json
+
+	# SDDM Theme
+	vmkdir usr/share/sddm/themes
+	vcopy "kde/Dark/sddm/*" usr/share/sddm/themes
+
+	# Wallpaper
+	vmkdir usr/share/wallpapers/Ant-Dark
+	vcopy "kde/Dark/wallpaper/*" usr/share/wallpapers/Ant-Dark
+
+	# Yakuake
+	vmkdir usr/share/yakuake/skins/Ant-Dark
+	vcopy "kde/Dark/yakuake/*" usr/share/yakuake/skins/Ant-Dark
+
+	# Cleanup redundant files not needed in the package
+	_print_msg "Cleaning redundant files..."
+	find "${DESTDIR}/usr/share/themes/Ant" -type f \( -name "*.py" -o -name "*.sh" -o -name "*.fish" \) -delete
+}
+
+ant-kde_package() {
+	short_desc+=" - KDE Plasma variant"
+	pkg_install() {
+	for _file in Kvantum aurorae color-schemes icons konsole plasma sddm wallpapers yakuake; do
+		vmove "usr/share/${_file}"
+	done
+	}
+}
