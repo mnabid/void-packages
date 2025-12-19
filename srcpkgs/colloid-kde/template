@@ -1,0 +1,63 @@
+# Template file for 'colloid-kde'
+pkgname=colloid-kde
+version=20250707
+revision=1
+_commit=b768904d10ba9fcb95abfb59538eab100b1fed1e
+depends="kvantum"
+short_desc="Colloid theme for KDE Plasma 6"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/vinceliuice/Colloid-kde"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=007964b43d1c8a1635c970d7d5f00b6687f532f061c71df0c401b0a1d13f15e5
+nostrip=yes
+
+do_install() {
+	# Window Decorations
+	vmkdir /usr/share/aurorae/themes
+	vcopy "aurorae/Colloid-*" usr/share/aurorae/themes
+	for theme in "${DESTDIR}/usr/share/aurorae/themes/"*; do
+		case $theme in
+			*-nord)
+				cp -r aurorae/common-nord/* "$theme/" ;;
+			*-light|*-dark|*-round)
+				cp -r aurorae/common/* "$theme/" ;;
+		esac
+	done
+
+	# Kvantum Theme
+	vmkdir /usr/share/Kvantum
+	vcopy "Kvantum/*" usr/share/Kvantum
+
+	# Color Schemes
+	vmkdir /usr/share/color-schemes
+	vcopy "color-schemes/*" usr/share/color-schemes
+
+	# Plasma Style
+	vmkdir /usr/share/plasma/desktoptheme
+	vcopy "plasma/desktoptheme/Colloid*" usr/share/plasma/desktoptheme
+	vcopy plasma/desktoptheme/icons usr/share/plasma/desktoptheme/Colloid-light
+	vcopy plasma/desktoptheme/icons usr/share/plasma/desktoptheme/Colloid-dark
+
+	# Global Theme
+	vmkdir /usr/share/plasma/look-and-feel
+	vcopy "plasma/look-and-feel/*" usr/share/plasma/look-and-feel
+
+	# Wallpapers
+	vmkdir /usr/share/wallpapers
+	vcopy "wallpapers/Colloid-*" usr/share/wallpapers
+
+	# SDDM Themes
+	vmkdir /usr/share/sddm/themes
+	for color in dark light; do
+		local _target="${DESTDIR}/usr/share/sddm/themes/Colloid-${color}"
+		cp -r sddm/6.0/Colloid "$_target"
+		# Copy specific assets
+		vinstall "sddm/6.0/images/Colloid-${color}.png" 644 "usr/share/sddm/themes/Colloid-${color}/background.png"
+		vinstall "sddm/6.0/images/Preview-${color}.png" 644 "usr/share/sddm/themes/Colloid-${color}/Preview.png"
+		# Patch metadata and QML
+		sed -i "s/^Name=Colloid/Name=Colloid-${color}/" "${_target}/metadata.desktop"
+		sed -i "s/^Theme-Id=Colloid/Theme-Id=Colloid-${color}/" "${_target}/metadata.desktop"
+		sed -i "s/Colloid/Colloid-${color}/g" "${_target}/Main.qml"
+	done
+}
