@@ -1,0 +1,44 @@
+# Template file for 'openbangla-keyboard'
+pkgname=openbangla-keyboard
+version=2.0.0.20260718
+revision=1
+_obk_commit=f83d5d065f3990287da33e4c9254668ff1b2c440
+_riti_commit=afee54a79e230165d38f6b17161cd8ff971e1c49
+_corrosion_commit=c4786e7ae2d5ade784aca29448df362c874ed04e
+build_style=cmake
+configure_args="-DBIN_DIR=/usr/bin -DLIBEXECDIR=/usr/lib/openbangla-keyboard
+ -DENABLE_FCITX=$(vopt_if fcitx5 ON OFF) -DENABLE_IBUS=$(vopt_if ibus ON OFF)"
+hostmakedepends="cargo pkg-config qt5-host-tools qt5-qmake rust"
+makedepends="qt5-devel libzstd-devel $(vopt_if fcitx5 libfcitx5-devel) $(vopt_if ibus ibus-devel)"
+depends="qt5-plugin-sqlite hicolor-icon-theme"
+short_desc="OpenSource, Unicode compliant Bengali Input Method"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://openbangla.github.io"
+distfiles="
+ https://github.com/OpenBangla/OpenBangla-Keyboard/archive/${_obk_commit}.tar.gz>${pkgname}-${version}.tar.gz
+ https://github.com/OpenBangla/riti/archive/${_riti_commit}.tar.gz>riti-${_riti_commit}.tar.gz
+ https://github.com/corrosion-rs/corrosion/archive/${_corrosion_commit}.tar.gz>corrosion-${_corrosion_commit}.tar.gz"
+checksum="
+ d76c871d20c867d9401d5d270240a83d640446a0ad9731b0dd1b84cc210eaa3c
+ 37245bb9691c3ca15667f46d3fb06a24cbf04220492e3ea2e34d9b90e6c817d4
+ 8172d86becedc7dbf93ecb63757d5f6075313208d94477f442770d45ae79b2ee"
+
+build_options="fcitx5 ibus"
+build_options_default="fcitx5 ibus"
+desc_option_fcitx5="Enable Fcitx5 support"
+desc_option_ibus="Enable IBus support"
+
+do_extract() {
+	vsrcextract -C ${wrksrc} --strip-components=1 "${pkgname}-${version}.tar.gz"
+	# Extract the submodules directly into the expected path
+	find "${wrksrc}/src/engine/riti" -mindepth 1 -delete
+	vsrcextract -C "${wrksrc}/src/engine/riti" --strip-components=1 "riti-${_riti_commit}.tar.gz"
+	find "${wrksrc}/cmake/corrosion-rs" -mindepth 1 -delete
+	vsrcextract -C "${wrksrc}/cmake/corrosion-rs" --strip-components=1 "corrosion-${_corrosion_commit}.tar.gz"
+}
+
+pre_build() {
+	cd src/engine/riti
+	cargo fetch
+}
