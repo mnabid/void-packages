@@ -1,0 +1,17 @@
+# Template file for 'spotx-bash'
+pkgname=spotx-bash
+version=20260310
+revision=1
+_commit=66a746a968fd1744e00459ba9ba3d64c96b75292
+depends="bash curl perl unzip zip"
+short_desc="Block ads and logging in the Spotify desktop client"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://github.com/SpotX-Official/SpotX-Bash"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=47053d3189ef3a7998e52fe48df3a9866f2cc234e5c17c770c9d2faf8beb710d
+
+do_install() {
+	vbin spotx.sh spotx
+	vlicense LICENSE
+}
