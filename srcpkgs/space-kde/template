@@ -1,0 +1,37 @@
+# Template file for 'space-kde'
+pkgname=space-kde
+version=20241218
+revision=1
+_commit=68311ce01ab923f49c58a609b5d44a3a016fad6f
+depends="kvantum"
+short_desc="Space theme for KDE"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/EliverLara/Space-kde"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=8381ef8729df6bca7a9501a8de1cb4098a7dd57dd3a4ce63b3b4c29937ebb983
+nostrip=yes
+
+do_install() {
+	# Window Decorations
+	vmkdir /usr/share/aurorae/themes
+	vcopy "aurorae/*" usr/share/aurorae/themes
+
+	# Kvantum Theme
+	vmkdir /usr/share/Kvantum
+	vcopy "Kvantum/*" usr/share/Kvantum
+
+	# Color Schemes
+	vmkdir /usr/share/color-schemes
+	vcopy "color-schemes/*" usr/share/color-schemes
+
+	# Global Theme & Plasma Style
+	vmkdir /usr/share/plasma
+	vcopy "plasma/*" usr/share/plasma
+	# KDE Plasma 6 switched to metadata.json from metadata.desktop
+	vcopy "${FILESDIR}/Space_desktoptheme.json" usr/share/plasma/desktoptheme/Space/metadata.json
+
+	# SDDM Themes
+	vmkdir /usr/share/sddm/themes
+	vcopy "sddm/*" usr/share/sddm/themes
+}
