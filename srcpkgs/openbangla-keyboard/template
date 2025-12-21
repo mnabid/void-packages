@@ -1,0 +1,39 @@
+# Template file for 'openbangla-keyboard'
+pkgname=openbangla-keyboard
+version=2.0.0.20260823
+revision=1
+_obk_commit=88f9532c7a1723943256b65b74e3b58c875fb00f
+_riti_commit=afee54a79e230165d38f6b17161cd8ff971e1c49
+build_style=cmake
+configure_args="-DBIN_DIR=/usr/bin -DLIBEXECDIR=/usr/lib/openbangla-keyboard
+ -DENABLE_FCITX=$(vopt_if fcitx5 ON OFF) -DENABLE_IBUS=$(vopt_if ibus ON OFF)"
+hostmakedepends="cargo corrosion pkg-config qt5-host-tools qt5-qmake rust"
+makedepends="qt5-devel qt5-svg-devel libzstd-devel $(vopt_if fcitx5 libfcitx5-devel) $(vopt_if ibus ibus-devel)"
+depends="qt5-plugin-sqlite hicolor-icon-theme"
+short_desc="OpenSource, Unicode compliant Bengali Input Method"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://openbangla.github.io"
+distfiles="
+ https://github.com/OpenBangla/OpenBangla-Keyboard/archive/${_obk_commit}.tar.gz>${pkgname}-${version}.tar.gz
+ https://github.com/OpenBangla/riti/archive/${_riti_commit}.tar.gz>riti-${_riti_commit}.tar.gz"
+checksum="
+ 439d7d392e6c1b9f04d84e755757ea37514f0a885b183fad37df311bc1c0914c
+ 37245bb9691c3ca15667f46d3fb06a24cbf04220492e3ea2e34d9b90e6c817d4"
+
+build_options="fcitx5 ibus"
+build_options_default="fcitx5 ibus"
+desc_option_fcitx5="Enable Fcitx5 support"
+desc_option_ibus="Enable IBus support"
+
+do_extract() {
+	vsrcextract -C ${wrksrc} --strip-components=1 "${pkgname}-${version}.tar.gz"
+	# Extract the submodules directly into the expected path
+	find "${wrksrc}/src/engine/riti" -mindepth 1 -delete
+	vsrcextract -C "${wrksrc}/src/engine/riti" --strip-components=1 "riti-${_riti_commit}.tar.gz"
+}
+
+pre_build() {
+	cd src/engine/riti
+	cargo fetch
+}
