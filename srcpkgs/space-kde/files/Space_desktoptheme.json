@@ -1,0 +1,19 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "eliverlara@gmail.com",
+                "Name": "EliverLara"
+            }
+        ],
+        "Category": "Plasma Theme",
+        "Dependencies": [],
+        "Description": "A dark and modern theme for plasma.",
+        "EnabledByDefault": true,
+        "Id": "Space",
+        "License": "GPLv3",
+        "Name": "Space",
+        "Version": "1.0.0",
+        "Website": "https://github.com/EliverLara/Space-kde"
+    }
+}
