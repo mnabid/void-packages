@@ -1,0 +1,66 @@
+# Template file for 'andromeda-gtk-theme'
+pkgname=andromeda-gtk-theme
+version=20251214
+revision=1
+_variants="Andromeda Andromeda-standard-buttons"
+_commit_main=078ca132c41248be67ef1c655a4306f73565f2e4
+_commit_standard_buttons=89f3d6b52a969bc28135b66b64377a99b2749ffe
+hostmakedepends="inkscape optipng python3"
+depends="gtk-engine-murrine"
+short_desc="Modern dark theme with a taste of the universe for GNOME"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/EliverLara/Andromeda-gtk"
+distfiles="
+	${homepage}/archive/${_commit_main}.tar.gz>Andromeda-${version}.tar.gz
+	${homepage}/archive/${_commit_standard_buttons}.tar.gz>Andromeda-standard-buttons-${version}.tar.gz
+"
+checksum="
+	7ce62677bed759924b604858f813e767238d1f4f5e4cb353ec48239dda90593e
+	3b8fb4d65a7a2e68cdc3cc0432d7c79c9b2955f404f300fe19b9b74a4ab9924c
+"
+nostrip=yes
+
+_print_msg() {
+	printf "\033[1;32m=> %s\033[0m\n" "$1"
+}
+
+do_extract() {
+	for _var in ${_variants}; do
+		_print_msg "Extracting ${_var}..."
+		mkdir -p "${wrksrc}/${_var}"
+		vsrcextract -C "${wrksrc}/${_var}" --strip-components=1 ${_var}-${version}.tar.gz
+	done
+}
+
+do_build() {
+	for _var in ${_variants}; do
+		_print_msg "Building variant: ${_var}..."
+		cd "${wrksrc}/${_var}"
+
+		_print_msg "Rendering GTK2 assets..."
+		( cd gtk-2.0 && ./render-assets.sh ) >/dev/null 2>&1
+
+		_print_msg "Rendering GTK3/4 assets..."
+		( cd src && ./render-gtk3-assets.py && ./render-gtk3-assets-hidpi.py ) >/dev/null 2>&1
+
+		_print_msg "Rendering WM assets..."
+		( cd src &&./render-wm-assets.py && ./render-wm-assets-hidpi.py ) >/dev/null 2>&1
+	done
+}
+
+do_install() {
+	for _var in ${_variants}; do
+		_print_msg "Installing variant: ${_var}..."
+		cd "${wrksrc}/${_var}"
+
+		vmkdir "usr/share/themes/${_var}"
+		for _file in assets cinnamon gnome-shell gtk-2.0 gtk-3.0 gtk-4.0 metacity-1 xfwm4 index.theme; do
+			vcopy "${_file}" "usr/share/themes/${_var}"
+		done
+	done
+
+	# Cleanup redundant files not needed in the package
+	_print_msg "Cleaning redundant files..."
+	find "${DESTDIR}/usr/share/themes" -type f \( -name "*.py" -o -name "*.sh" -o -name "*.fish" \) -delete
+}
