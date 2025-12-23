@@ -1,0 +1,42 @@
+# Template file for 'andromeda-kde'
+pkgname=andromeda-kde
+version=20250115
+revision=1
+_commit=c97ba4265fe7c1e7b8d67437d1b807cefb80775d
+depends="kvantum"
+short_desc="Andromeda theme for KDE"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/EliverLara/Andromeda-KDE"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=8fd84c7d44f2cf3b182ea06025a2ef64c3b34a5c367e6ab0245c06c3ee7571e4
+nostrip=yes
+
+do_install() {
+	# Window Decorations
+	vmkdir /usr/share/aurorae/themes
+	vcopy "aurorae/*" usr/share/aurorae/themes
+
+	# Color Schemes
+	vmkdir /usr/share/color-schemes
+	vcopy "color-schemes/*" usr/share/color-schemes
+
+	# Konsole
+	vmkdir usr/share/konsole
+	vcopy "konsole/*" usr/share/konsole
+
+	# Kvantum Theme
+	vmkdir /usr/share/Kvantum
+	vcopy "kvantum/*" usr/share/Kvantum
+
+	# Global Theme & Plasma Style
+	vmkdir /usr/share/plasma
+	vcopy "plasma/*" usr/share/plasma
+	# KDE Plasma 6 switched to metadata.json from metadata.desktop
+	vcopy "${FILESDIR}/Andromeda_lookandfeel.json" usr/share/plasma/look-and-feel/Andromeda/metadata.json
+	vcopy "${FILESDIR}/Andromeda_desktoptheme.json" usr/share/plasma/desktoptheme/Andromeda/metadata.json
+
+	# SDDM Themes
+	vmkdir /usr/share/sddm/themes/Andromeda
+	vcopy "sddm/*" usr/share/sddm/themes/Andromeda
+}
