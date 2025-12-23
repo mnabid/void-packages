@@ -1,0 +1,20 @@
+# Template file for 'colloid-icon-theme'
+pkgname=colloid-icon-theme
+version=0.0.20251227
+revision=1
+_commit=c9e702beb96f731e2b3bea2fa1c619fa94e79a9f
+depends="hicolor-icon-theme"
+short_desc="Colloid icon theme for linux desktops"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/vinceliuice/Colloid-icon-theme"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=939b23b84a3a8699c56fc11ede58480dab1926409f5c11fd0d7c9a848cf37edd
+nostrip=yes
+
+do_install() {
+	vmkdir usr/share/icons
+	# Remove gtk-update-icons-cache, it'll be run automatically by xbps
+	sed -i '/gtk-update-icon-cache/ d' install.sh
+	./install.sh --notint -d "${DESTDIR}/usr/share/icons"
+}
