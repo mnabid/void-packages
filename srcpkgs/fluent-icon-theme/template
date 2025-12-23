@@ -1,0 +1,20 @@
+# Template file for 'fluent-icon-theme'
+pkgname=fluent-icon-theme
+version=20251107
+revision=1
+_commit=8a99a6dee4b2b8033bd3a41787792910d9d40c20
+depends="hicolor-icon-theme"
+short_desc="Fluent icon theme for linux desktops"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/vinceliuice/Fluent-icon-theme"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=88542f7deee5964fe7f750b87f60f23a74a33218bb1a5f0df959ff3f312d23ef
+nostrip=yes
+
+do_install() {
+	vmkdir usr/share/icons
+	# Remove gtk-update-icons-cache, it'll be run automatically by xbps
+	sed -i '/gtk-update-icon-cache/ d' install.sh
+	./install.sh -a -d "${DESTDIR}/usr/share/icons"
+}
