@@ -1,0 +1,17 @@
+# Template file for 'pam-fprint-grosshack'
+pkgname=pam-fprint-grosshack
+version=0.4.0
+revision=1
+build_style=meson
+configure_args="-Dsystemd=false -Dpam_modules_dir=/usr/lib/security"
+hostmakedepends="dbus-glib-devel gettext glib-devel pkg-config perl python3-cairo
+ python3-pypamtest python3-dbus python3-dbusmock libxslt libfprint polkit"
+makedepends="dbus-devel dbus-glib-devel glib-devel pam-devel
+ libfprint-devel polkit-devel cairo-devel elogind-devel pam_wrapper"
+depends="fprintd"
+short_desc="PAM module enabling simultaneous fingerprint and password authentication"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-2.0-or-later"
+homepage="https://gitlab.com/mnabid/pam-fprint-grosshack"
+distfiles="${homepage}/-/archive/v$version/pam-fprint-grosshack-v${version}.tar.gz"
+checksum=228512e8ba4ff7c814135d6c6d15099145bae454ccde562c18410aec61cc1462
