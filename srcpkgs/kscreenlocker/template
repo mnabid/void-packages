@@ -34,6 +34,19 @@ homepage="https://invent.kde.org/plasma/kscreenlocker"
 distfiles="${KDE_SITE}/plasma/${version}/${pkgname}-${version}.tar.xz"
 checksum=fecabebb14072ce6fd6d67e82b27f2d93b4ff2f113524203e7656896f93d293c
 
+conf_files="
+ /etc/pam.d/kde
+ /etc/pam.d/kde-fingerprint
+ /etc/pam.d/kde-smartcard
+"
+
+post_install() {
+	vmkdir usr/lib/pam.d
+	vinstall ${FILESDIR}/kde.pam 644 etc/pam.d kde
+	vinstall ${FILESDIR}/kde-fingerprint.pam 644 etc/pam.d kde-fingerprint
+	vinstall ${FILESDIR}/kde-smartcard.pam 644 etc/pam.d kde-smartcard
+}
+
 kscreenlocker-devel_package() {
 	short_desc+=" - development files"
 	depends="${sourcepkg}>=${version}_${revision} qt6-base-devel"
