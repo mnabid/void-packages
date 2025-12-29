@@ -1,0 +1,30 @@
+# Template file for 'webtorrent-cli'
+pkgname=webtorrent-cli
+version=6.0.1
+revision=1
+hostmakedepends="nodejs"
+depends="nodejs"
+short_desc="Streaming torrent client for the command line"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://webtorrent.io"
+distfiles="https://github.com/webtorrent/webtorrent-cli/archive/v${version}.tar.gz"
+checksum=6ede5193f8346bbd64bc209150df84650adfcb8f98802c4670c9baf44a69c4d3
+noverifyrdeps="yes"
+
+do_build() {
+	npm install --omit=dev --cache "${XBPS_BUILDDIR}/npm-cache"
+}
+
+do_install() {
+	vmkdir usr/lib/webtorrent-cli
+	for _file in bin node_modules package.json version.cjs; do
+		vcopy "${_file}" usr/lib/webtorrent-cli
+	done
+
+	# Create the symlink to /usr/bin
+	vmkdir usr/bin
+	ln -s /usr/lib/webtorrent-cli/bin/cmd.js ${DESTDIR}/usr/bin/webtorrent
+
+	vlicense LICENSE
+}
