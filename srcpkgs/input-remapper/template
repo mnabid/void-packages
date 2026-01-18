@@ -1,0 +1,29 @@
+# Template file for 'input-remapper'
+pkgname=input-remapper
+version=2.2.0+20260107
+revision=1
+_commit=684a972b969e5195be34240c92f977d96ab11d1d
+hostmakedepends="gettext python3-pip python3-wheel python3-packaging-bootstrap"
+depends="gtk+3 gtksourceview4 python3-cairo python3-evdev python3-gobject
+ python3-packaging python3-psutil python3-pydantic python3-dasbus"
+short_desc="Tool to change and program the mapping of input device buttons"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/sezanzeb/input-remapper"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=0f90391b1cfc65f245ac6ba884738fe26c5e8e0f0738f504d9197eaf926777d4
+
+do_install() {
+	# Prevent installing systemd services
+	sed -i "/systemd/ d" install/data_files.py
+
+	# _get_commit_hash() won't work, provide the commit hash manually
+	sed -i "/COMMIT_HASH/ s/_get_commit_hash()/\'${_commit}\'/" install/module.py
+
+	# build_style=python3-pep517 isn't working at the moment
+	python3 -m install --root ${DESTDIR}
+
+	# Install runit service
+	# rm -rf ${DESTDIR}/usr/lib/systemd
+	vsv input-remapper
+}
