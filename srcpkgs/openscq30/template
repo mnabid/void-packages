@@ -1,0 +1,38 @@
+# Template file for 'openscq30'
+pkgname=openscq30
+version=2.5.0
+revision=1
+build_style=cargo
+make_build_args="-p openscq30-cli -p openscq30-gui"
+make_check_args="-p openscq30-lib -p openscq30-cli -p openscq30-gui"
+hostmakedepends="pkg-config"
+makedepends="dbus-devel sqlite-devel libxkbcommon-devel"
+short_desc="Application for controlling settings of Soundcore headphones"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/Oppzippy/OpenSCQ30"
+distfiles="${homepage}/archive/refs/tags/v${version}.tar.gz"
+checksum=1bba8668801af807a2826385477503e735822558694db74bc57ec5b27a142190
+
+pre_build() {
+	vsed -i '/lto/ s/true/"thin"/' "${wrksrc}/Cargo.toml"
+}
+
+do_install() {
+	vbin target/${RUST_TARGET}/release/openscq30
+	vbin target/${RUST_TARGET}/release/openscq30-gui
+
+	local _pkgid="com.oppzippy.OpenSCQ30"
+	vinstall gui/resources/${_pkgid}.metainfo.xml 644 usr/share/metainfo
+	vinstall gui/resources/${_pkgid}.svg 644 usr/share/icons/hicolor/scalable/apps
+	vinstall gui/resources/${_pkgid}.desktop 644 usr/share/applications
+}
+
+openscq30-gui_package() {
+	short_desc+=" - GUI application"
+	depends="${sourcepkg}>=${version}_${revision} cosmic-icons"
+	pkg_install() {
+		vmove usr/bin/openscq30-gui
+		vmove usr/share
+	}
+}
