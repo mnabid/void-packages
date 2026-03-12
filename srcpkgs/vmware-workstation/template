@@ -1,0 +1,392 @@
+# Template file for 'vmware-workstation'
+pkgname=vmware-workstation
+version=25H2u1
+revision=1
+_buildver=25219725
+_pkgver="${version}_${_buildver}"
+archs="x86_64"
+create_wrksrc=yes
+hostmakedepends="tar sqlite"
+depends="fuse gcr gtk+ gtk+3 gtkmm libcanberra libaio pcsclite hicolor-icon-theme
+ libxcrypt libxml2 vmware-workstation-dkms-${version}_${revision}"
+short_desc="Industry standard for running multiple OSes as VMs on a single Linux PC"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="custom:VMware-Workstation"
+homepage="https://www.vmware.com/products/workstation-for-linux.html"
+repository=nonfree
+restricted=yes
+nostrip=yes
+noverifyrdeps=yes
+noshlibprovides=yes
+python_version=ignore
+
+# CAUTION: Running macOS on non-Apple hardware is prohibited by Apple
+# and is NOT officially supported by VMware.
+_fusion_ver=13.5.2
+_fusion_buildver=23775688
+build_options="macos_guests"
+desc_option_macos_guests="Enable macOS guest support"
+
+conf_files="
+ /etc/vmware/config
+ /etc/conf.d/vmware"
+mutable_files="/etc/vmware-installer/database"
+
+distfiles="
+ https://archive.org/download/VMware-Workstation-Full-${version}-${_buildver}.x86_64/VMware-Workstation-Full-${version}-${_buildver}.x86_64.bundle
+ https://packages-prod.broadcom.com/tools/frozen/linux/linux.iso
+ https://packages-prod.broadcom.com/tools/frozen/linux/linuxPreGlibc25.iso
+ https://packages-prod.broadcom.com/tools/frozen/netware/netware.iso
+ https://packages-prod.broadcom.com/tools/frozen/solaris/solaris.iso
+ https://packages-prod.broadcom.com/tools/frozen/windows/winPre2k.iso
+ https://packages-prod.broadcom.com/tools/frozen/windows/winPreVista.iso
+ https://packages-prod.broadcom.com/tools/frozen/windows/WindowsToolsVista/SP1/windows.iso>winVistaSP1.iso
+ https://packages-prod.broadcom.com/tools/frozen/windows/WindowsToolsVista/SP2/windows.iso>winVistaSP2.iso"
+
+checksum="
+ 721aa93c4ebcaa51ac6db75ed97c7a4db10aa88110446890db1e40bfafc7566a
+ 4e66b286b743d9cf788c487295b1dec3c6071d657674f650aadc23e8900758ff
+ aef8f747bd9a6e84d139c57b8c1f8e87c83a9b9df69cd09602030190fec21973
+ 2c89993d811f5d90f7b0e2a286e9339907055e51ecb16f25509e5c4517326487
+ 4666b0adfec6636ecda60bfab889cbf28f06f77526442628a70789fd76823e70
+ a17a11d65f841d213ffc2d6681acdf849c380e77055334c7a8127c1373991ebb
+ aab73d3ef4668beec725541c08c41042bb22fc86cd5563310fc170b952631d8a
+ 3b8f9d6e43f5d1dff0576cb93d008c14e0434d7233872f6c63988513d2bda5d1
+ 8f1cc3181055891b98672f715e0ca7bbe4018960eae945d7a4b9f640c44c3d79"
+
+skip_extraction="VMware-Workstation-Full-${version}-${_buildver}.x86_64.bundle"
+
+if [ "$build_option_macos_guests" ]; then
+	hostmakedepends+=" python3"
+	distfiles+="
+	 https://packages-prod.broadcom.com/tools/frozen/darwin/darwin.iso
+	 https://packages-prod.broadcom.com/tools/frozen/darwin/darwinPre15.iso"
+	checksum+="
+	 e0c96286f376b30e2c2362bd991709f0f6bc6ebd911be4056a58da8698c49236
+	 ef33fc5d152fd9db27cac0b1f21160226dfa5e5b7a501ffa25818682f3b4aaa0"
+fi
+
+_extractedimages="windows"
+_isoimages="linux linuxPreGlibc25 netware solaris winPre2k winPreVista winVistaSP1 winVistaSP2"
+
+_msg() {
+    printf "\033[1;37m..... %s\033[0m\n" "$1"
+}
+
+# Create a database which contains the list of guest tools
+# (necessary to avoid that vmware try to download them)
+_create_database_file() {
+	local database_filename="${DESTDIR}/etc/vmware-installer/database"
+	echo -n "" > "${database_filename}"
+
+	sqlite3 "${database_filename}" \
+		"CREATE TABLE settings(key VARCHAR PRIMARY KEY, \
+		 value VARCHAR NOT NULL, component_name VARCHAR NOT NULL);"
+	sqlite3 "${database_filename}" \
+		"INSERT INTO settings(key,value,component_name) \
+		 VALUES('db.schemaVersion','2','vmware-installer');"
+	sqlite3 "${database_filename}" \
+		"CREATE TABLE components(id INTEGER PRIMARY KEY, \
+		 name VARCHAR NOT NULL, version VARCHAR NOT NULL, \
+		 buildNumber INTEGER NOT NULL, component_core_id INTEGER NOT NULL, \
+		 longName VARCHAR NOT NULL, description VARCHAR, type INTEGER NOT NULL);"
+
+	for isoimage in ${_extractedimages}; do
+		local ver
+		ver=$(sed -n \
+			's|.*<version>\([^<]*\)</version>.*|\1|p' \
+			"${wrksrc}/extracted/vmware-tools-${isoimage}/manifest.xml" | head -1)
+		sqlite3 "${database_filename}" \
+			"INSERT INTO components \
+			 (name,version,buildNumber,component_core_id,longName,description,type) \
+			 VALUES('vmware-tools-${isoimage}','${ver}',${_buildver},1,\
+			 '${isoimage}','${isoimage}',1);"
+	done
+
+	for isoimage in ${_isoimages}; do
+		sqlite3 "${database_filename}" \
+			"INSERT INTO components \
+			 (name,version,buildNumber,component_core_id,longName,description,type) \
+			 VALUES('vmware-tools-${isoimage}','1',${_buildver},1,\
+			 '${isoimage}','${isoimage}',1);"
+	done
+
+	if [ "$build_option_macos_guests" ]; then
+		for isoimage in darwin darwinPre15; do
+			sqlite3 "${database_filename}" \
+				"INSERT INTO components \
+				 (name,version,buildNumber,component_core_id,longName,description,type) \
+				 VALUES('vmware-tools-${isoimage}','1',${_fusion_buildver},1,\
+				 '${isoimage}','${isoimage}',1);"
+		done
+	fi
+}
+
+do_extract() {
+	# Manually extract the .bundle installer
+	# The ISO distfiles are plain files; they do not need extraction
+	bash "${XBPS_SRCDISTDIR}/${pkgname}-${version}/VMware-Workstation-Full-${version}-${_buildver}.x86_64.bundle" \
+		--extract "${wrksrc}/extracted"
+}
+
+do_install() {
+	local extracted="${wrksrc}/extracted"
+	local vmware_installer_version
+	vmware_installer_version=$(sed -n \
+		's|.*<version>\([^<]*\)</version>.*|\1|p' \
+		"${extracted}/vmware-installer/manifest.xml" | head -1)
+
+	### Directories ###
+	_msg "Creating directories"
+	vmkdir etc/vmware
+	vmkdir etc/vmware-installer
+	vmkdir etc/vmware-vix
+	vmkdir usr/bin
+	vmkdir usr/include/vmware-vix
+	vmkdir usr/lib/modprobe.d
+	vmkdir usr/lib/modules-load.d
+	vmkdir usr/lib/vmware-ovftool
+	vmkdir usr/lib/vmware-vix
+	vmkdir usr/lib/vmware/setup
+	vmkdir "usr/lib/vmware-installer/${vmware_installer_version}"
+	vmkdir usr/share
+	vmkdir usr/share/doc/vmware-vix
+
+	cd "${extracted}"
+
+	### Main file tree ###
+	_msg "Copying bundled files"
+	vcopy "vmware-workstation/share/*" usr/share
+	vcopy vmware-workstation/man usr/share
+	vcopy "vmware-network-editor-ui/share/*" usr/share
+	vcopy "vmware-player-app/share/*" usr/share
+
+	vcopy "vmware-workstation/bin/*" usr/bin
+	vcopy "vmware-vmx/bin/*" usr/bin
+	vcopy "vmware-vmx/sbin/*" usr/bin
+	vcopy "vmware-vix-core/bin/*" usr/bin
+	vcopy "vmware-vprobe/bin/*" usr/bin
+	vcopy "vmware-player-app/bin/*" usr/bin
+
+	vcopy "vmware-workstation/lib/*" usr/lib/vmware
+	vcopy "vmware-player-app/lib/*" usr/lib/vmware
+	vcopy "vmware-vmx/lib/*" usr/lib/vmware
+	vcopy vmware-vmx/roms usr/lib/vmware
+	vcopy "vmware-vprobe/lib/*" usr/lib/vmware
+	vcopy vmware-usbarbitrator/bin usr/lib/vmware
+	vcopy vmware-network-editor/lib usr/lib/vmware
+
+	vcopy vmware-player-setup/vmware-config usr/lib/vmware/setup
+
+	vcopy "vmware-vix-lib-Workstation1700/lib/Workstation-17.0.0" usr/lib/vmware-vix
+	vcopy "vmware-vix-core/lib/*" usr/lib/vmware-vix
+	vcopy vmware-vix-core/vixwrapper-config.txt usr/lib/vmware-vix
+
+	vcopy "vmware-vix-core/doc/*" usr/share/doc/vmware-vix
+
+	vcopy "vmware-ovftool/*" usr/lib/vmware-ovftool
+
+	vcopy vmware-installer/python "usr/lib/vmware-installer/${vmware_installer_version}"
+	vcopy vmware-installer/sopython "usr/lib/vmware-installer/${vmware_installer_version}"
+	vcopy vmware-installer/vmis "usr/lib/vmware-installer/${vmware_installer_version}"
+	vcopy vmware-installer/vmis-launcher "usr/lib/vmware-installer/${vmware_installer_version}"
+	vcopy vmware-installer/vmware-installer "usr/lib/vmware-installer/${vmware_installer_version}"
+	vcopy vmware-installer/vmware-installer.py "usr/lib/vmware-installer/${vmware_installer_version}"
+
+	vcopy "vmware-vix-core/include/*" usr/include/vmware-vix
+
+	### VMware tools ###
+	_msg "Copying VMware Tools ISOs"
+	for isoimage in ${_extractedimages}; do
+		vinstall "vmware-tools-${isoimage}/${isoimage}.iso" 644 \
+			usr/lib/vmware/isoimages
+	done
+	for isoimage in ${_isoimages}; do
+		vinstall "${XBPS_SRCDISTDIR}/${pkgname}-${version}/${isoimage}.iso" 644 \
+			usr/lib/vmware/isoimages
+	done
+
+	### Guest tools database ###
+	_msg "Populating guest tools database"
+	_create_database_file
+
+	### VMware installer shim ###
+	vmkdir "usr/lib/vmware-installer/${vmware_installer_version}/lib/lib"
+	vmkdir "usr/lib/vmware-installer/${vmware_installer_version}/artwork"
+	vinstall "${FILESDIR}/configure-initscript.sh" 755 \
+		"usr/lib/vmware-installer/${vmware_installer_version}/bin" \
+		configure-initscript.sh
+
+	### Config / bootstrap files ###
+	_msg "Installing configuration files"
+	vinstall "${FILESDIR}/vmware-environment.sh" 644 etc/conf.d vmware
+	vinstall vmware-vmx/etc/modprobe.d/modprobe-vmware-fuse.conf 644 \
+		usr/lib/modprobe.d vmware-fuse.conf
+	vinstall vmware-vmx/extra/modules.xml 644 usr/lib/vmware/modules
+	vinstall vmware-installer/bootstrap 644 etc/vmware-installer
+	vinstall "${FILESDIR}/vmware-vix-bootstrap" 644 etc/vmware-vix bootstrap
+	vinstall "${FILESDIR}/vmware-bootstrap" 644 etc/vmware bootstrap
+	vinstall "${FILESDIR}/config" 644 etc/vmware config
+
+	### DKMS kernel module sources ###
+	_msg "Copying DKMS kernel modules"
+	local dkms_dir="${DESTDIR}/usr/src/${pkgname}-${_pkgver}"
+	install -Dm644 "${FILESDIR}/Makefile" "${dkms_dir}/Makefile"
+	install -Dm644 "${FILESDIR}/dkms.conf.in" "${dkms_dir}/dkms.conf"
+	vsed -e "s/@PKGNAME@/${pkgname}/g" \
+		-e "s/@PKGVER@/${_pkgver}/g" \
+		-i "${dkms_dir}/dkms.conf"
+
+	for module in vmmon vmnet; do
+		_msg "Patching ${module} module for DKMS"
+		tar -xf "${extracted}/vmware-vmx/lib/modules/source/${module}.tar" \
+				-C "${dkms_dir}"
+			patch -p2 --read-only=ignore \
+				--directory="${dkms_dir}/${module}-only" \
+				< "${FILESDIR}/${module}.patch"
+	done
+
+	rm -r "${DESTDIR}/usr/lib/vmware/modules/source"
+
+	### modules-load.d ###
+	echo -e "vmw_vmci\nvmmon" \
+		> "${DESTDIR}/usr/lib/modules-load.d/vmware.conf"
+
+	### Permissions ###
+	_msg "Fixing file permissions"
+	chmod 0755 \
+		"${DESTDIR}/usr/bin"/* \
+		"${DESTDIR}/usr/lib/vmware/bin"/* \
+		"${DESTDIR}/usr/lib/vmware/setup"/* \
+		"${DESTDIR}/usr/lib/vmware/lib/libvmware-gksu.so/gksu-run-helper" \
+		"${DESTDIR}/usr/lib/vmware-ovftool/ovftool" \
+		"${DESTDIR}/usr/lib/vmware-ovftool/ovftool.bin" \
+		"${DESTDIR}/usr/lib/vmware-installer/${vmware_installer_version}/vmware-installer" \
+		"${DESTDIR}/usr/lib/vmware-installer/${vmware_installer_version}/vmis-launcher" \
+		"${DESTDIR}/usr/lib/vmware-vix/setup"/*
+
+	chmod 4755 \
+		"${DESTDIR}/usr/bin/vmware-authd" \
+		"${DESTDIR}/usr/lib/vmware/bin/vmware-vmx" \
+		"${DESTDIR}/usr/lib/vmware/bin/vmware-vmx-debug" \
+		"${DESTDIR}/usr/lib/vmware/bin/vmware-vmx-stats"
+
+	### Symlinks (appLoader) ###
+	_msg "Adding symbolic links to appLoader"
+	for link in \
+		licenseTool \
+		vmplayer \
+		vmware \
+		vmware-app-control \
+		vmware-enter-serial \
+		vmware-fuseUI \
+		vmware-gksu \
+		vmware-modconfig \
+		vmware-modconfig-console \
+		vmware-mount \
+		vmware-netcfg \
+		vmware-setup-helper \
+		vmware-tray \
+		vmware-vmblock-fuse \
+		vmware-vprobe \
+		vmware-zenity
+	do
+		ln -s /usr/lib/vmware/bin/appLoader \
+			"${DESTDIR}/usr/lib/vmware/bin/${link}"
+	done
+
+	ln -s /usr/lib/vmware/bin/appLoader "${DESTDIR}/usr/bin/vmrest"
+
+	for link in vmware-fuseUI vmware-mount vmware-netcfg vmware-usbarbitrator; do
+		ln -s "/usr/lib/vmware/bin/${link}" "${DESTDIR}/usr/bin/${link}"
+	done
+
+	ln -s /usr/lib/vmware/icu "${DESTDIR}/etc/vmware/icu"
+	ln -s /usr/lib/vmware-ovftool/ovftool "${DESTDIR}/usr/bin/ovftool"
+	ln -s /usr/lib/vmware-vix/libvixAllProducts.so \
+		"${DESTDIR}/usr/lib/libvixAllProducts.so"
+
+	### Placeholder substitutions ###
+	_msg "Substituting placeholder variables with real paths"
+	vsed -i 's,@@LIBCONF_DIR@@,/usr/lib/vmware/libconf,g' \
+		"${DESTDIR}/usr/lib/vmware/libconf/etc/gtk-3.0/gdk-pixbuf.loaders"
+
+	vsed -i 's,@@BINARY@@,/usr/bin/vmware,' \
+		"${DESTDIR}/usr/share/applications/vmware-workstation.desktop"
+	vsed -i 's,@@BINARY@@,/usr/bin/vmplayer,' \
+		"${DESTDIR}/usr/share/applications/vmware-player.desktop"
+	vsed -i 's,@@BINARY@@,/usr/bin/vmware-netcfg,' \
+		"${DESTDIR}/usr/share/applications/vmware-netcfg.desktop"
+
+	vsed -e "s/@@VERSION@@/${vmware_installer_version}/" \
+	    -e "s,@@VMWARE_INSTALLER@@,/usr/lib/vmware-installer/${vmware_installer_version}," \
+	    -i "${DESTDIR}/etc/vmware-installer/bootstrap"
+
+	### Environment variables ###
+	for program in vmware vmplayer vmware-tray; do
+		vsed -e '/export PRODUCT_NAME/asource /etc/conf.d/vmware' \
+			-e 's/if "$BINDIR"\/vmware-modconfig --appname=.*/if true ||/' \
+			-i "${DESTDIR}/usr/bin/${program}"
+	done
+
+	### macOS guest support ###
+	if [ "$build_option_macos_guests" ]; then
+		_msg "Patching VMware to enable macOS guest support"
+		# Temporarily copy unlocker.py to prevent overwriting
+		cp "${FILESDIR}/unlocker.py" "${wrksrc}"
+		vsed -i "s|/usr/lib/vmware/|${DESTDIR}/usr/lib/vmware/|" \
+			"${wrksrc}/unlocker.py"
+		python3 "${wrksrc}/unlocker.py" > /dev/null
+
+		for isoimage in darwin darwinPre15; do
+			vinstall \
+				"${XBPS_SRCDISTDIR}/${pkgname}-${version}/${isoimage}.iso" \
+				644 usr/lib/vmware/isoimages
+		done
+
+		# Replace ServerVersion.plist with SystemVersion.plist in UTF-16LE.
+		# A raw binary replacement works because the string length is identical
+		# and VMware's EFI doesn't halt on the FFS checksum mismatch.
+		_msg "Patching EFI firmwares to disable macOS server checking"
+		for arch in 32 64 20-32 20-64; do
+			python3 "${FILESDIR}/patch-efi.py" \
+				"${DESTDIR}/usr/lib/vmware/roms/EFI${arch}.ROM"
+		done
+	fi
+
+	### Desktop files ###
+	_msg "Adding StartupWMClass attribute to the .desktop files"
+	vsed -i '/^StartupNotify=.*/a StartupWMClass=vmware' \
+		"${DESTDIR}/usr/share/applications/vmware-workstation.desktop"
+	vsed -i '/^StartupNotify=.*/a StartupWMClass=vmplayer' \
+		"${DESTDIR}/usr/share/applications/vmware-player.desktop"
+	vsed -i '/^StartupNotify=.*/a StartupWMClass=vmware-netcfg' \
+		"${DESTDIR}/usr/share/applications/vmware-netcfg.desktop"
+
+	### Licenses ###
+	_msg "Copying licenses"
+	vlicense vmware-workstation/doc/EULA "VMware Workstation - EULA.txt"
+	vlicense vmware-workstation/doc/open_source_licenses.txt \
+		"VMware Workstation - Open Source Licenses.txt"
+	vlicense vmware-workstation/doc/ovftool_open_source_licenses.txt \
+		"VMware OVF Tool - Open Source Licenses.txt"
+	vlicense vmware-vix-core/open_source_licenses.txt \
+		"VMware VIX - Open Source Licenses.txt"
+	vlicense vmware-ovftool/vmware.eula "VMware OVF Tool - EULA.txt"
+	rm "${DESTDIR}/usr/lib/vmware-ovftool"/{vmware.eula,vmware-eula.rtf,open_source_licenses.txt,manifest.xml}
+
+	### Runit services ###
+	_msg "Installing Runit services"
+	vsv vmware-networks
+	vsv vmware-usbarbitrator
+}
+
+vmware-workstation-dkms_package() {
+	short_desc+=" - DKMS kernel modules"
+	depends="dkms"
+	dkms_modules="vmware-workstation ${_pkgver}"
+
+	pkg_install() {
+		vmove usr/src
+	}
+}

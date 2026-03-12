@@ -1,0 +1,14 @@
+#!/bin/sh
+exec 2>&1
+
+# Load vmnet module
+modprobe vmnet 2>/dev/null || true
+
+# Generate VMware network configuration if not yet present
+if [ ! -f /etc/vmware/networking ]; then
+    umask 0077
+    /usr/bin/vmware-networks --postinstall vmware-player,0,1
+fi
+
+/usr/bin/vmware-networks --start
+exec chpst -b vmware-networks pause

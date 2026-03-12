@@ -1,0 +1,14 @@
+# INSTALL
+case "$ACTION" in
+post)
+	# Re-apply SUID bits that were stripped by xbps-src
+	chmod 4755 /usr/bin/vmware-authd
+	chmod 4755 /usr/lib/vmware/bin/vmware-vmx
+	chmod 4755 /usr/lib/vmware/bin/vmware-vmx-debug
+	chmod 4755 /usr/lib/vmware/bin/vmware-vmx-stats
+	if [ "$UPDATE" = "no" ]; then
+		# Load kernel modules without requiring a reboot
+		modprobe -a vmw_vmci vmmon 2>/dev/null || true
+	fi
+	;;
+esac
