@@ -1,0 +1,20 @@
+# Template file for 'GTK-NoCSD'
+pkgname=GTK-NoCSD
+version=20260402
+revision=1
+_commit=2642031cb2da85273c4f9c5a105cec777e4bd73b
+build_style=gnu-makefile
+make_install_args="PREFIX=/usr LIBDIR=/usr/lib NOOPT=1"
+hostmakedepends="pkg-config"
+makedepends="gtk4-devel libadwaita-devel"
+short_desc="LD_PRELOAD library to disable CSD in GTK3/4 apps"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-or-later"
+homepage="https://codeberg.org/MorsMortium/GTK-NoCSD"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=dc98dba6a76dc3a251c76678b7749e355229cf6fea4976272125cebd8fa27ddc
+
+pre_build() {
+	CFLAGS+=" $(pkg-config --cflags gtk4 libadwaita-1 glib-2.0)"
+	LDFLAGS+=" $(pkg-config --libs gtk4 libadwaita-1 glib-2.0)"
+}
