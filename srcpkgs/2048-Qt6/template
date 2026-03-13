@@ -1,0 +1,31 @@
+# Template file for '2048-Qt6'
+pkgname=2048-Qt6
+version=0.1.7
+revision=1
+build_style=qmake
+hostmakedepends="qt6-declarative-host-tools"
+makedepends="qt6-declarative-devel"
+depends="desktop-file-utils hicolor-icon-theme xdg-utils"
+short_desc="2048 game implemented in Qt"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://github.com/mnabid/2048-Qt6"
+distfiles="${homepage}/archive/refs/tags/v${version}.tar.gz"
+checksum=ebd7a4de7d2d8ae6aec03335b441e88f14adad7f90fb8f4df919a64249349b96
+
+do_install() {
+	vbin 2048-qt
+
+	for size in 16 32 48 256; do
+		vinstall res/icons/${size}x${size}/apps/2048-qt.png 644 usr/share/icons/hicolor/${size}x${size}/apps
+	done
+	vinstall res/icons/scalable/apps/2048-qt.svg 644 usr/share/icons/hicolor/scalable/apps
+
+	vlicense LICENSE
+
+	vinstall res/2048-qt.desktop 644 usr/share/applications
+	vdoc README.md
+	vdoc Changelog.md
+
+	vman res/man/2048-qt.6
+}
