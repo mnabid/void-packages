@@ -1,0 +1,52 @@
+# Template file for 'codex'
+pkgname=codex
+version=0.151.0
+revision=1
+build_style=cargo
+build_helper=qemu
+build_wrksrc="codex-rs"
+make_build_args="--bin codex --bin codex-responses-api-proxy"
+hostmakedepends="pkg-config python3 sqlite-devel"
+makedepends="libcap-devel libzstd-devel oniguruma-devel openssl-devel sqlite-devel zlib-devel"
+short_desc="OpenAI's lightweight coding agent that runs in your terminal"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="Apache-2.0"
+homepage="https://github.com/openai/codex"
+distfiles="${homepage}/archive/refs/tags/rust-v${version}.tar.gz"
+checksum=17f37b9c2f98e00ce297b813355a1b41cd22882c3def89be84a250069bff0a02
+make_check=no # tests require sandboxing and cause OOM compilation
+
+# Trim down build time and prevent OOM crashes
+export CARGO_PROFILE_RELEASE_LTO="thin"
+export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
+
+pre_build() {
+	if [ "$CROSS_BUILD" ]; then
+		# workaround cc-rs mixing CFLAGS for host and target.
+		# https://github.com/rust-lang/cc-rs/issues/1469
+		export CFLAGS_${RUST_BUILD//-/_}="${CFLAGS_host}" \
+			CXXFLAGS_${RUST_BUILD//-/_}="${CXXFLAGS_host}" \
+			LDFLAGS_${RUST_BUILD//-/_}="${LDFLAGS_host}" \
+			CFLAGS_${RUST_TARGET//-/_}="${CFLAGS}" \
+			CXXFLAGS_${RUST_TARGET//-/_}="${CXXFLAGS}" \
+			LDFLAGS_${RUST_TARGET//-/_}="${LDFLAGS}" \
+			CFLAGS="" CXXFLAGS="" LDFLAGS=""
+	fi
+
+	cargo fetch --target ${RUST_TARGET}
+
+	if [ "$XBPS_TARGET_WORDSIZE" = 32 ]; then
+		find "${CARGO_HOME:-/host/cargo}/registry/src" -name pagable_arc.rs \
+			-exec sed -i 's/target_pointer_width = "32"/all(&, target_arch = "wasm32")/' {} +
+	fi
+}
+
+do_install() {
+	vbin target/${RUST_TARGET}/release/codex
+	vbin target/${RUST_TARGET}/release/codex-responses-api-proxy
+
+	for SHELL in bash zsh fish; do
+		vtargetrun "${DESTDIR}/usr/bin/codex" completion "${SHELL}" > "codex.${SHELL}"
+		vcompletion "codex.${SHELL}" "${SHELL}" codex
+	done
+}
