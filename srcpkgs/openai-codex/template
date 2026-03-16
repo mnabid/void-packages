@@ -1,0 +1,29 @@
+# Template file for 'openai-codex'
+pkgname=openai-codex
+version=0.114.0
+revision=1
+build_style=cargo
+build_wrksrc="codex-rs"
+make_build_args="--bin codex --bin codex-responses-api-proxy"
+hostmakedepends="pkg-config"
+makedepends="libcap-devel libzstd-devel oniguruma-devel openssl-devel sqlite-devel zlib-devel"
+short_desc="OpenAI's lightweight coding agent that runs in your terminal"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="Apache-2.0"
+homepage="https://github.com/openai/codex"
+distfiles="https://github.com/openai/codex/archive/refs/tags/rust-v${version}.tar.gz"
+checksum="9f649d59bb95a29794ddea9c8db8d4c3c0f3a245b720fc4fbf0bbac25032e511"
+
+pre_build() {
+	cargo build ${XBPS_VERBOSE+${make_verbose}} --release --target ${RUST_TARGET} ${configure_args} ${make_build_args}
+}
+
+do_install() {
+	vbin target/${RUST_TARGET}/release/codex
+	vbin target/${RUST_TARGET}/release/codex-responses-api-proxy
+
+	for SHELL in bash zsh fish; do
+		./target/${RUST_TARGET}/release/codex completion "${SHELL}" > "codex.${SHELL}"
+		vcompletion "codex.${SHELL}" "${SHELL}" codex
+	done
+}
