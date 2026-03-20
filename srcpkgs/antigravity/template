@@ -1,0 +1,59 @@
+# Template file for 'antigravity'
+pkgname=antigravity
+version=1.20.6
+revision=1
+archs="x86_64 aarch64"
+hostmakedepends="curl"
+short_desc="Agentic development platform from Google"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="custom:LicenseRef-Google-Antigravity"
+homepage="https://antigravity.google/"
+repository=nonfree
+restricted=yes
+noshlibprovides=yes
+nostrip=yes
+
+_srcdistdir="${XBPS_SRCDISTDIR}/${pkgname}-${version}"
+
+do_fetch() {
+	# Complex filename, contains build timestamp and hash.
+	# We are fetching it dynamically for ease of maintenance.
+	local _repo_url="https://us-central1-yum.pkg.dev/projects/antigravity-auto-updater-dev/antigravity-rpm"
+	local _meta_url="${_repo_url}/repodata/primary.xml.gz"
+	local _rpm_path=$(curl -sL "$_meta_url" | zcat | \
+		sed -n 's/.*href="\(Packages\/[^"]*\.x86_64\.rpm\)".*/\1/p' | \
+		head -n 1)
+
+	if [ -z "$_rpm_path" ]; then
+		msg_error "Could not find distfile for version ${version} on ${XBPS_TARGET_MACHINE}\n"
+	fi
+
+	if [ ! -f "${_srcdistdir}/${pkgname}-${version}.${XBPS_TARGET_MACHINE}.rpm" ]; then
+		mkdir -p "${_srcdistdir}"
+		"${XBPS_FETCH_CMD}" "${_repo_url}/${_rpm_path}" \
+			-o "${_srcdistdir}/${pkgname}-${version}.${XBPS_TARGET_MACHINE}.rpm"
+	fi
+}
+
+do_extract() {
+	bsdtar -xf "${_srcdistdir}/${pkgname}-${version}.${XBPS_TARGET_MACHINE}.rpm"
+}
+
+do_install() {
+	vcopy usr .
+
+	# Move electron-related files to /opt
+	vmkdir opt
+	mv "${DESTDIR}/usr/share/antigravity" "${DESTDIR}/opt/antigravity"
+
+	# Create executable script /usr/bin
+	vbin "${FILESDIR}/antigravity"
+
+	# Fix .desktop files
+	vsed -e 's|/usr/share/antigravity/||g' \
+		-i "${DESTDIR}/usr/share/applications/antigravity.desktop" \
+		"${DESTDIR}/usr/share/applications/antigravity-url-handler.desktop"
+
+	# Copy License file
+	vlicense "${DESTDIR}/opt/antigravity/LICENSES.chromium.html"
+}

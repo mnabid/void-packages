@@ -1,0 +1,2 @@
+site="https://api.github.com/repos/archlinux/aur/commits?sha=antigravity"
+pattern='antigravity \K[\d.]+(?=-)'
