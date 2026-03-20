@@ -1,0 +1,57 @@
+
+# Template file for 'antigravity'
+pkgname=antigravity
+version=1.22.2
+revision=1
+archs="x86_64 aarch64"
+create_wrksrc=yes
+short_desc="Agentic development platform from Google"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="custom:LicenseRef-Google-Antigravity"
+homepage="https://antigravity.google/"
+repository=nonfree
+restricted=yes
+noshlibprovides=yes
+nostrip=yes
+
+_debrepo="https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/pool/antigravity-debian"
+case "$XBPS_TARGET_MACHINE" in
+x86_64)
+    _timestamp=1775164135
+    _md5sum=725a36fefbc1adaf753dc6fafe632600
+    distfiles="${_debrepo}/antigravity_1.22.2-${_timestamp}_amd64_${_md5sum}.deb"
+    checksum=4e570703d4b3766300202998a47315badab11dc11b94149996e7d4db98e1f709
+    ;;
+aarch64)
+    _timestamp=1775164161
+    _md5sum=ebd1956bce022f57a34163370e557235
+    distfiles="${_debrepo}/antigravity_1.22.2-${_timestamp}_arm64_${_md5sum}.deb"
+    checksum=168bfa600723729133076f94353bf9123cf77fa8c1d1cad9cdec733f6349a193
+    ;;
+*)
+    broken="No distfiles available for this target"
+    ;;
+esac
+
+
+do_install() {
+	vcopy usr .
+
+	# Move electron-related files to /opt
+	vmkdir opt
+	mv "${DESTDIR}/usr/share/antigravity" "${DESTDIR}/opt/antigravity"
+
+	# Create executable script
+	vbin "${FILESDIR}/antigravity.sh" antigravity
+
+	# Fix .desktop files
+	vsed -e 's|/usr/share/antigravity/||g' \
+		-i "${DESTDIR}/usr/share/applications/antigravity.desktop" \
+		"${DESTDIR}/usr/share/applications/antigravity-url-handler.desktop"
+
+	# Completion should be in site-functions, not vendor-completions
+	mv "${DESTDIR}/usr/share/zsh/vendor-completions" "${DESTDIR}/usr/share/zsh/site-functions"
+
+	# Copy License file
+	vlicense "${DESTDIR}/opt/antigravity/LICENSES.chromium.html"
+}
