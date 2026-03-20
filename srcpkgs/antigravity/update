@@ -1,0 +1,16 @@
+_debrepo="https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/dists/antigravity-debian"
+case "$XBPS_TARGET_MACHINE" in
+x86_64)
+	site="${_debrepo}/main/binary-amd64/Packages"
+	version="${version}.${_timestamp}.amd64.${_md5sum}"
+	pattern='antigravity_\K.+(?=\.deb)'
+	;;
+aarch64)
+	site="${_debrepo}/main/binary-arm64/Packages"
+	version="${version}.${_timestamp}.arm64.${_md5sum}"
+	pattern='antigravity_\K.+(?=\.deb)'
+	;;
+*)
+	disabled="No distfiles available for this target"
+	;;
+esac
