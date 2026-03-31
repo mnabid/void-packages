@@ -1,0 +1,10 @@
+# srcpkgs/flutter/REMOVE
+case "$ACTION" in
+post)
+    # Wipe the remaining artifacts
+    if [ -d opt/flutter ]; then
+        echo "Cleaning up /opt/flutter..."
+        rm -rf opt/flutter
+    fi
+    ;;
+esac

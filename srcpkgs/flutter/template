@@ -1,0 +1,31 @@
+# Template file for 'flutter'
+pkgname=flutter
+version=3.44.0
+revision=1
+archs="x86_64"
+create_wrksrc=yes
+depends="curl git unionfs-fuse"
+short_desc="Cross platform widget toolkit for Dart"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="BSD-3-Clause AND custom:Google-Patent-Grant"
+homepage="https://github.com/flutter/flutter"
+distfiles="https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${version}-stable.tar.xz"
+checksum=e1ec95e6c550458a34de93580cb85dac24da0e9bedb9bb42811f050ac5a0c7d5
+nostrip=yes
+
+python_version="3"
+system_groups="flutter"
+
+do_install() {
+    vmkdir opt
+    vcopy flutter opt
+    vinstall ${FILESDIR}/flutter_init.sh 644 opt/flutter/bin
+
+    vmkdir usr/bin
+    vbin "${FILESDIR}/dart.sh" dart
+    vbin "${FILESDIR}/flutter.sh" flutter
+    echo "flutter_init.sh" >> ${DESTDIR}/opt/flutter/.git/info/exclude
+
+    vlicense "${DESTDIR}/opt/flutter/LICENSE"
+    vlicense "${DESTDIR}/opt/flutter/PATENT_GRANT"
+}

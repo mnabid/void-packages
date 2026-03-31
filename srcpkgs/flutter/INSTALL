@@ -1,0 +1,10 @@
+# srcpkgs/flutter/INSTALL
+case "$ACTION" in
+post)
+	echo "Setting permissions for /opt/flutter..."
+	chown -R root:flutter opt/flutter
+	chmod -R g+w opt/flutter
+	# Set the setgid bit on all directories
+	find opt/flutter -type d -exec chmod g+s {} +
+	;;
+esac
