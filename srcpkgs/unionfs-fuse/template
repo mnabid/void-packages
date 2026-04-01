@@ -1,0 +1,20 @@
+# Template file for 'unionfs-fuse'
+pkgname=unionfs-fuse
+version=3.8
+revision=1
+build_style=gnu-makefile
+make_install_args="SBINDIR=/bin"
+hostmakedepends="pkg-config"
+makedepends="fuse3-devel"
+short_desc="User space unionfs implementation"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="BSD-3-Clause"
+homepage="https://github.com/rpodgorny/unionfs-fuse"
+distfiles="https://github.com/rpodgorny/unionfs-fuse/archive/v${version}.tar.gz"
+checksum=88482d27a886fefd251af3d5b7123e82b2b5800219e7d61d4f29bfee718bbaac
+
+CFLAGS="-fPIC"
+
+post_install() {
+	vlicense LICENSE
+}
