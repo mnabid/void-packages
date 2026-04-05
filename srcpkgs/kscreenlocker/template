@@ -39,6 +39,19 @@ checksum=6c41ce2cb79d2b85d4fbe5a3a61c09e40c70e5a869ae6f0352c7e1cb3b44606b
 makedepends+=" kde-plasma-base"
 shlib_requires="KDE_Plasma.${version}"
 
+conf_files="
+ /etc/pam.d/kde
+ /etc/pam.d/kde-fingerprint
+ /etc/pam.d/kde-smartcard
+"
+
+post_install() {
+	vmkdir usr/lib/pam.d
+	vinstall ${FILESDIR}/kde.pam 644 etc/pam.d kde
+	vinstall ${FILESDIR}/kde-fingerprint.pam 644 etc/pam.d kde-fingerprint
+	vinstall ${FILESDIR}/kde-smartcard.pam 644 etc/pam.d kde-smartcard
+}
+
 kscreenlocker-devel_package() {
 	short_desc+=" - development files"
 	depends="${sourcepkg}>=${version}_${revision} qt6-base-devel"
