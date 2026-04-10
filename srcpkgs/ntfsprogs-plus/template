@@ -1,0 +1,40 @@
+# Template file for 'ntfsprogs-plus'
+pkgname=ntfsprogs-plus
+version=1.0.0
+revision=1
+build_style=gnu-configure
+configure_args="--exec-prefix=/usr --disable-static --with-fuse=external
+ --enable-posix-acls --enable-xattr-mappings --sbin=/usr/bin
+ $(vopt_if extras --enable-extras)
+ $(vopt_if crypto --enable-crypto)
+ $(vopt_if quarantined --enable-quarantined)"
+hostmakedepends="automake libtool pkg-config"
+makedepends="libuuid-devel $(vopt_if crypto 'libgcrypt-devel gnutls-devel')"
+short_desc="NTFS filesystem utilities"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-2.0-or-later, LGPL-2.0-or-later"
+homepage="https://github.com/ntfsprogs-plus/ntfsprogs-plus"
+distfiles="https://codeload.github.com/${pkgname}/${pkgname}/tar.gz/refs/tags/${version}>${pkgname}-${version}.tar.gz"
+checksum=3e3d9d2f3620cdebb128fb8dbc116f2c2a035f18000e3f01af204694ef8c7778
+
+provides="ntfs-3g-${version}_${revision} ntfsprogs-${version}_${revision}"
+replaces="ntfs-3g>=0"
+
+build_options="crypto extras quarantined"
+desc_option_crypto="Enable crypto related code and utilities"
+desc_option_extras="Enable extra ntfsprogs utilities"
+desc_option_quarantined="Enable quarantined ntfsprogs utilities"
+build_options_default="crypto extras"
+
+pre_configure() {
+	./autogen.sh
+}
+
+ntfsprogs-plus-devel_package() {
+	depends="fuse-devel ${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove "usr/lib/*.so"
+	}
+}
