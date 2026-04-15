@@ -1,0 +1,422 @@
+From 4b5c4bf7e0059951d6375335c38f8d709b05826e Mon Sep 17 00:00:00 2001
+From: Bart van Deenen <bartvandeenen@fastmail.fm>
+Date: Wed, 15 Apr 2026 13:18:39 +0200
+Subject: [PATCH] Add runit backend to Services tab
+
+Auto-detects runit at runtime via /run/runit and sv; queries all
+services in one sv status call and maps runit states to the existing
+Service model fields. Systemd remains the primary backend; runit is
+tried when systemd is absent. No configuration required.
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
+---
+ CHANGELOG.md             |   1 +
+ README.md                |   9 +++
+ src/os/service.cpp       | 127 +++++++++++++++++++++---------------
+ src/os/servicehelper.cpp | 137 +++++++++++++++++++++++++++++++++++++++
+ src/os/servicehelper.h   |   9 +++
+ src/serviceswidget.cpp   |  12 +---
+ 6 files changed, 232 insertions(+), 63 deletions(-)
+
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 7b21a31..e9ee20b 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,6 @@
+ # 1.0.4
+   * Services control (via d-bus / systemctl)
++  * Services tab now supports runit (Void Linux) in addition to systemd
+   * Option to display stats for each swap device separately
+   * Dynamically load / unload swap devices as they are added / disabled
+   * Notify user when they try to send signal to processes owned by different UID
+diff --git a/README.md b/README.md
+index 52a4b36..1adad65 100644
+--- a/README.md
++++ b/README.md
+@@ -56,6 +56,15 @@ make -j$(nproc)
+ ./tux-manager
+ ```
+ 
++## Services
++
++The Services tab auto-detects the active init system at runtime:
++
++* **systemd** — queries via the sd-bus API (with `systemctl` as fallback)
++* **runit** — queries via `sv status` (Void Linux and other runit-based distros)
++
++No configuration is needed; detection is based on `/run/systemd/system` and `/run/runit`.
++
+ ## Core philosophy and goals of this project
+ 
+ * KISS - keep it simple stupid
+diff --git a/src/os/service.cpp b/src/os/service.cpp
+index 985e58f..d8d933d 100644
+--- a/src/os/service.cpp
++++ b/src/os/service.cpp
+@@ -23,81 +23,100 @@
+ 
+ using namespace OS;
+ 
+-QList<Service> Service::LoadAll(QString *error)
++namespace
+ {
+-    QList<Service> out;
+-
+-    QString reason;
+-    if (!ServiceHelper::IsSystemdAvailable(&reason))
+-    {
+-        if (error)
+-            *error = reason;
+-        return out;
+-    }
+-
+-    QList<ServiceHelper::ServiceRecord> rows;
+-    if (ServiceHelper::ListServicesViaSystemdDbus(rows, error))
++    QList<Service> recordsToServices(const QList<ServiceHelper::ServiceRecord> &rows)
+     {
++        QList<Service> out;
+         out.reserve(rows.size());
+         for (const auto &r : rows)
+         {
+             Service s;
+-            s.Unit = r.unit;
++            s.Unit        = r.unit;
+             s.Description = r.description;
+-            s.LoadState = r.loadState;
++            s.LoadState   = r.loadState;
+             s.ActiveState = r.activeState;
+-            s.SubState = r.subState;
++            s.SubState    = r.subState;
+             out.append(s);
+         }
+-        if (error)
+-            error->clear();
+         return out;
+     }
++} // namespace
++
++QList<Service> Service::LoadAll(QString *error)
++{
++    QList<Service> out;
+ 
+-    // Fallback for environments where sd-bus API isn't available but systemctl
+-    // is. This still keeps the app functional on more minimal installs.
+-    QString stdoutText;
+-    QString stderrText;
+-    int exitCode = -1;
+-    const QStringList args {
+-        "list-units",
+-        "--type=service",
+-        "--all",
+-        "--no-pager",
+-        "--no-legend",
+-        "--plain"
+-    };
+-    if (!ServiceHelper::RunSystemctl(args, stdoutText, stderrText, exitCode, kSystemctlQueryTimeoutMs) || exitCode != 0)
++    if (ServiceHelper::IsSystemdAvailable())
+     {
++        QList<ServiceHelper::ServiceRecord> rows;
++        if (ServiceHelper::ListServicesViaSystemdDbus(rows, error))
++        {
++            if (error)
++                error->clear();
++            return recordsToServices(rows);
++        }
++
++        // Fallback for environments where sd-bus API isn't available but
++        // systemctl is. This keeps the app functional on more minimal installs.
++        QString stdout_text;
++        QString stderr_text;
++        int exit_code = -1;
++        const QStringList args {
++            "list-units",
++            "--type=service",
++            "--all",
++            "--no-pager",
++            "--no-legend",
++            "--plain"
++        };
++        if (!ServiceHelper::RunSystemctl(args, stdout_text, stderr_text, exit_code) || exit_code != 0)
++        {
++            if (error)
++                *error = stderr_text.isEmpty()
++                         ? QObject::tr("Unable to query services via sd-bus or systemctl")
++                         : stderr_text;
++            return out;
++        }
++
++        static const QRegularExpression line_re(
++            "^(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*(.*)$");
++        const QStringList lines = stdout_text.split('\n', Qt::SkipEmptyParts);
++        for (const QString &raw_line : lines)
++        {
++            const QString line = raw_line.trimmed();
++            if (line.isEmpty())
++                continue;
++
++            const QRegularExpressionMatch m = line_re.match(line);
++            if (!m.hasMatch())
++                continue;
++
++            Service s;
++            s.Unit        = m.captured(1);
++            s.LoadState   = m.captured(2);
++            s.ActiveState = m.captured(3);
++            s.SubState    = m.captured(4);
++            s.Description = m.captured(5).trimmed();
++            out.append(s);
++        }
++
+         if (error)
+-            *error = stderrText.isEmpty()
+-                     ? QObject::tr("Unable to query services via sd-bus or systemctl")
+-                     : stderrText;
++            error->clear();
+         return out;
+     }
+ 
+-    const QRegularExpression lineRe("^(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*(.*)$");
+-    const QStringList lines = stdoutText.split('\n', Qt::SkipEmptyParts);
+-    for (const QString &rawLine : lines)
++    if (ServiceHelper::IsRunitAvailable())
+     {
+-        const QString line = rawLine.trimmed();
+-        if (line.isEmpty())
+-            continue;
+-
+-        const QRegularExpressionMatch m = lineRe.match(line);
+-        if (!m.hasMatch())
+-            continue;
+-
+-        Service s;
+-        s.Unit        = m.captured(1);
+-        s.LoadState   = m.captured(2);
+-        s.ActiveState = m.captured(3);
+-        s.SubState    = m.captured(4);
+-        s.Description = m.captured(5).trimmed();
+-        out.append(s);
++        QList<ServiceHelper::ServiceRecord> rows;
++        if (!ServiceHelper::ListServicesViaRunit(rows, error))
++            return out;
++        if (error)
++            error->clear();
++        return recordsToServices(rows);
+     }
+ 
+     if (error)
+-        error->clear();
++        *error = QObject::tr("No supported service manager found (systemd or runit)");
+     return out;
+ }
+diff --git a/src/os/servicehelper.cpp b/src/os/servicehelper.cpp
+index 9da3714..d49f989 100644
+--- a/src/os/servicehelper.cpp
++++ b/src/os/servicehelper.cpp
+@@ -20,8 +20,10 @@
+ #include "../logger.h"
+ 
+ #include <dlfcn.h>
++#include <QDir>
+ #include <QFileInfo>
+ #include <QProcess>
++#include <QRegularExpression>
+ #include <QStandardPaths>
+ 
+ using namespace OS;
+@@ -427,3 +429,138 @@ bool ServiceHelper::ManageUnit(const QString &unit, UnitAction action, QString *
+     LOG_DEBUG(QString("Managed service %1 via systemctl fallback").arg(unit));
+     return true;
+ }
++
++bool ServiceHelper::IsRunitAvailable(QString *reason)
++{
++    if (!QFileInfo::exists("/run/runit"))
++    {
++        if (reason)
++            *reason = QObject::tr("runit runtime directory not present");
++        return false;
++    }
++
++    if (QStandardPaths::findExecutable("sv").isEmpty())
++    {
++        if (reason)
++            *reason = QObject::tr("sv not found");
++        return false;
++    }
++
++    if (reason)
++        reason->clear();
++    return true;
++}
++
++bool ServiceHelper::RunSv(const QStringList &args,
++                           QString          &stdoutText,
++                           QString          &stderrText,
++                           int              &exitCode,
++                           int               timeoutMs)
++{
++    stdoutText.clear();
++    stderrText.clear();
++    exitCode = -1;
++
++    const QString exe = QStandardPaths::findExecutable("sv");
++    if (exe.isEmpty())
++    {
++        stderrText = QObject::tr("sv not found");
++        return false;
++    }
++
++    QProcess p;
++    p.start(exe, args);
++    if (!p.waitForStarted(500))
++    {
++        stderrText = QObject::tr("Failed to start sv");
++        return false;
++    }
++
++    if (!p.waitForFinished(timeoutMs))
++    {
++        p.kill();
++        p.waitForFinished(200);
++        stderrText = QObject::tr("sv timed out");
++        return false;
++    }
++
++    stdoutText = QString::fromUtf8(p.readAllStandardOutput());
++    stderrText = QString::fromUtf8(p.readAllStandardError());
++    exitCode = p.exitCode();
++    return p.exitStatus() == QProcess::NormalExit;
++}
++
++bool ServiceHelper::ListServicesViaRunit(QList<ServiceRecord> &records, QString *error)
++{
++    records.clear();
++
++    QDir sv_dir("/var/service");
++    sv_dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
++    const QStringList service_names = sv_dir.entryList();
++    if (service_names.isEmpty())
++    {
++        if (error)
++            *error = QObject::tr("No services found in /var/service");
++        return false;
++    }
++
++    QStringList args;
++    args.append("status");
++    for (const QString &name : service_names)
++        args.append("/var/service/" + name);
++
++    QString stdout_text;
++    QString stderr_text;
++    int exit_code = -1;
++    // sv exits non-zero when any service is down (failure count, capped at 99).
++    // Valid output lines are still emitted for all services, so we parse
++    // stdout regardless of exit code; only a process-start failure is fatal.
++    if (!RunSv(args, stdout_text, stderr_text, exit_code))
++    {
++        if (error)
++            *error = stderr_text.isEmpty() ? QObject::tr("Failed to run sv status") : stderr_text;
++        return false;
++    }
++
++    // Each stdout line looks like one of:
++    //   run: sshd: (pid 1234) 3601s; run: log: (pid 1220) 3601s
++    //   down: dhcpcd: 0s, normally up
++    //   finish: crond: (pid 456) 5s
++    //   fail: nonexistent: unable to change to service directory: ...
++    static const QRegularExpression line_re(
++        "^(run|down|finish|fail|warn):\\s+(\\S+):\\s+(.*)$");
++
++    const QStringList lines = stdout_text.split('\n', Qt::SkipEmptyParts);
++    for (const QString &raw_line : lines)
++    {
++        // Strip the optional log-service section that follows a ';'
++        const QString line = raw_line.section(';', 0, 0).trimmed();
++        const QRegularExpressionMatch m = line_re.match(line);
++        if (!m.hasMatch())
++            continue;
++
++        const QString sv_state = m.captured(1);
++        if (sv_state == "fail" || sv_state == "warn")
++            continue;
++
++        ServiceRecord rec;
++        rec.unit = m.captured(2);
++        rec.loadState = "loaded";
++        rec.subState = sv_state;
++        rec.description = m.captured(3).trimmed();
++
++        if (sv_state == "run")
++            rec.activeState = "active";
++        else if (sv_state == "finish")
++            rec.activeState = "deactivating";
++        else
++            rec.activeState = "inactive";
++
++        records.append(rec);
++    }
++
++    if (error)
++        error->clear();
++    return true;
++}
++
+diff --git a/src/os/servicehelper.h b/src/os/servicehelper.h
+index 85595e7..22b459f 100644
+--- a/src/os/servicehelper.h
++++ b/src/os/servicehelper.h
+@@ -62,6 +62,15 @@ namespace OS
+                                    UnitAction     action,
+                                    QString       *error = nullptr);
+ 
++            static bool IsRunitAvailable(QString *reason = nullptr);
++            static bool RunSv(const QStringList &args,
++                              QString          &stdoutText,
++                              QString          &stderrText,
++                              int              &exitCode,
++                              int               timeoutMs = 10000);
++            static bool ListServicesViaRunit(QList<ServiceRecord> &records,
++                                             QString              *error = nullptr);
++
+         private:
+             ServiceHelper() = delete;
+     };
+diff --git a/src/serviceswidget.cpp b/src/serviceswidget.cpp
+index 7f5b275..9080467 100644
+--- a/src/serviceswidget.cpp
++++ b/src/serviceswidget.cpp
+@@ -19,7 +19,6 @@
+ #include "serviceswidget.h"
+ #include "ui_serviceswidget.h"
+ 
+-#include "os/servicehelper.h"
+ #include "configuration.h"
+ #include "ui/uihelper.h"
+ 
+@@ -34,14 +33,9 @@
+ 
+ void ServiceRefreshWorker::fetch(quint64 token)
+ {
+-    QString reason;
+-    const bool systemdAvailable = OS::ServiceHelper::IsSystemdAvailable(&reason);
+     QString error;
+-    QList<OS::Service> services;
+-    if (systemdAvailable)
+-        services = OS::Service::LoadAll(&error);
+-
+-    emit fetched(token, systemdAvailable, reason, services, error);
++    const QList<OS::Service> services = OS::Service::LoadAll(&error);
++    emit fetched(token, error.isEmpty(), error, services, error);
+ }
+ 
+ ServicesWidget::ServicesWidget(QWidget *parent)
+@@ -174,7 +168,7 @@ void ServicesWidget::onRefreshFinished(quint64 token, bool systemdAvailable, con
+     {
+         this->ui->tableView->setVisible(false);
+         this->ui->unavailableLabel->setVisible(true);
+-        this->ui->unavailableLabel->setText(tr("systemd required (%1)").arg(reason));
++        this->ui->unavailableLabel->setText(tr("Services unavailable: %1").arg(reason));
+         this->ui->statusLabel->setText(tr("Services unavailable"));
+     } else if (!error.isEmpty())
+     {
