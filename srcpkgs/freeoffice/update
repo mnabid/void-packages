@@ -1,0 +1,2 @@
+site=https://www.freeoffice.com/en/download/servicepacks
+pattern="Revision \K[\d.]+"
