@@ -1,0 +1,60 @@
+# Template file for 'freeoffice'
+pkgname=freeoffice
+version=1234
+revision=1
+_year=2024
+archs="x86_64"
+hostmakedepends="chrpath"
+depends="curl desktop-file-utils xdg-utils"
+short_desc="Microsoft Office-compatible office suite"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="custom:LicenseRef-custom"
+homepage="http://www.freeoffice.com/"
+distfiles="http://www.softmaker.net/down/softmaker-${pkgname}-${_year}-${version}-amd64.tgz"
+checksum=ab94147af912c5d87adb664c8706cee381cb268c29834bf0bfd75eee174e5104
+
+repository=nonfree
+restricted=yes
+nopie=yes
+
+post_extract() {
+	# The .tgz distfile is auto-extracted by xbps-src, but it contains an inner .tar.lzma.
+	mkdir freeoffice
+	bsdtar -xf freeoffice${_year}.tar.lzma -C freeoffice
+}
+
+do_install() {
+	# Remove insecure RPATH
+	chrpath --delete freeoffice/textmaker
+	chrpath --delete freeoffice/planmaker
+	chrpath --delete freeoffice/presentations
+
+	vcopy freeoffice usr/lib
+
+	# Installing license file
+	vlicense freeoffice/mime/copyright license.txt
+
+	# Install program executables
+	vbin ${FILESDIR}/freeoffice-planmaker
+	vbin ${FILESDIR}/freeoffice-textmaker
+	vbin ${FILESDIR}/freeoffice-presentations
+
+	# Installing icons
+	for size in 16 32 48; do
+		vinstall freeoffice/icons/pml_${size}.png 644 usr/share/icons/hicolor/${size}x${size}/apps freeoffice-planmaker.png
+		vinstall freeoffice/icons/prl_${size}.png 644 usr/share/icons/hicolor/${size}x${size}/apps freeoffice-presentations.png
+		vinstall freeoffice/icons/tml_${size}.png 644 usr/share/icons/hicolor/${size}x${size}/apps freeoffice-textmaker.png
+
+		vinstall freeoffice/icons/pmd_${size}.png 644 usr/share/icons/hicolor/${size}x${size}/mimetypes application-x-pmd.png
+		vinstall freeoffice/icons/prd_${size}.png 644 usr/share/icons/hicolor/${size}x${size}/mimetypes application-x-prd.png
+		vinstall freeoffice/icons/tmd_${size}.png 644 usr/share/icons/hicolor/${size}x${size}/mimetypes application-x-tmd.png
+	done
+
+	# Install desktop files
+	vinstall ${FILESDIR}/freeoffice-textmaker.desktop 644 usr/share/applications
+	vinstall ${FILESDIR}/freeoffice-planmaker.desktop 644 usr/share/applications
+	vinstall ${FILESDIR}/freeoffice-presentations.desktop 644 usr/share/applications
+
+	# Installing mime file
+	vinstall freeoffice/mime/softmaker-freeoffice24.xml 644 usr/share/mime/packages
+}
