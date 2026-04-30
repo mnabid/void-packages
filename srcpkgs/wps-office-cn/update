@@ -1,0 +1,3 @@
+site="https://linux.wps.cn/wpslinuxlog"
+version="${version}.AK.preread.sw.Personal.${_buildver}"
+pattern="wps-office_\K[\d.]+.*_[\d]+(?=_amd64\.deb)"
