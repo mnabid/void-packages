@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Seanime
+Exec=seanime-denshi %U
+Terminal=false
+Type=Application
+Icon=seanime-denshi
+StartupWMClass=Seanime
+Comment=Self-hosted anime media server and client
+Categories=Network;AudioVideo;

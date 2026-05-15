@@ -1,0 +1,89 @@
+# Template file for 'seanime'
+pkgname=seanime
+version=3.10.2
+revision=1
+_electron_ver=42.4.0
+_mpvcore_ver=0.1.8
+build_style=go
+go_import_path="seanime"
+hostmakedepends="nodejs"
+short_desc="Self-hosted anime media server and client"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://github.com/5rahim/seanime"
+distfiles="https://github.com/5rahim/seanime/archive/refs/tags/v${version}.tar.gz>seanime-${version}.tar.gz"
+checksum=6a8974b9dabd97aa8cd50f12e4cacf043722bf05be878731b5d263bbc275d0e2
+make_check=no # tests require network access and AniList fixtures
+
+if [ "$XBPS_TARGET_MACHINE" = "x86_64" ]; then
+	distfiles+=" https://seanime.app/assets/mpv-prism/${_mpvcore_ver}/native/linux-x64.tar.gz>mpv-prism-${_mpvcore_ver}-x64.tar.gz
+		https://seanime.app/assets/electron/v${_electron_ver}/electron-v${_electron_ver}-linux-x64.zip"
+	checksum+=" c339895d22879e4842655b055de556e066811b6777befcd549cdcd36e3c7c130
+		e91b515af4c1870ccf193bd219b2b0b66c2480f1315648daf29cbf07e9513e16"
+	skip_extraction="mpv-prism-${_mpvcore_ver}-x64.tar.gz electron-v${_electron_ver}-linux-x64.zip"
+
+	post_extract() {
+		vsrcextract -C seanime-denshi/native-builds/linux-x64 --no-strip-components mpv-prism-${_mpvcore_ver}-x64.tar.gz
+		vsrcextract -C seanime-denshi/electron --no-strip-components electron-v${_electron_ver}-linux-x64.zip
+	}
+fi
+
+pre_build() {
+	cd seanime-web
+	npm install
+	npm run build
+	npm run build:denshi
+
+	mv out ../web
+	mv out-denshi ../seanime-denshi/web-denshi
+
+	cd ../seanime-denshi
+	npm install
+	npm run build:main
+	npm prune --omit=dev
+}
+
+post_install() {
+	vlicense LICENSE
+}
+
+seanime-denshi_package() {
+	archs="x86_64"
+	depends="seanime mpv"
+	noshlibprovides=yes
+	short_desc+=" - Desktop client"
+	pkg_install() {
+		# Patch binary path
+		vsed -i seanime-denshi/dist/main/index.js \
+			-e 's|binaryPath = .*join(process.resourcesPath,.*)|binaryPath = "/usr/bin/seanime"|'
+
+		# Install custom Electron and app resources
+		vmkdir usr/lib/seanime-denshi
+		vcopy seanime-denshi/electron usr/lib/seanime-denshi
+
+		vmkdir usr/lib/seanime-denshi/electron/resources/app
+		for f in src dist web-denshi assets node_modules package.json; do
+			vcopy "seanime-denshi/${f}" usr/lib/seanime-denshi/electron/resources/app
+		done
+
+		# Install bundled libraries
+		vmkdir usr/lib/seanime-denshi/electron/resources/app/native-builds/linux-x64
+		vcopy "seanime-denshi/native-builds/linux-x64/*" usr/lib/seanime-denshi/electron/resources/app/native-builds/linux-x64
+
+		# Clean up native node modules that don't match the target architecture
+		local extract_zip_dir="${PKGDESTDIR}/usr/lib/seanime-denshi/electron/resources/app/node_modules/@electron-internal/extract-zip"
+		local target_node="index.linux-x64-gnu.node"
+		mv "${extract_zip_dir}/${target_node}" "${PKGDESTDIR}/usr/lib/seanime-denshi/"
+		rm -f "${extract_zip_dir}"/*.node
+		mv "${PKGDESTDIR}/usr/lib/seanime-denshi/${target_node}" "${extract_zip_dir}/"
+
+		# Install launcher script and desktop entry
+		vbin ${FILESDIR}/seanime-denshi.sh seanime-denshi
+
+		for i in 16 32 64 128 256 512; do
+			vinstall seanime-denshi/assets/${i}x${i}.png 644 \
+				usr/share/icons/hicolor/${i}x${i}/apps seanime-denshi.png
+		done
+		vinstall ${FILESDIR}/seanime-denshi.desktop 644 usr/share/applications
+	}
+}
