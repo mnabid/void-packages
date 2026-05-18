@@ -1,12 +1,12 @@
 # Template file for 'vmware-workstation'
 pkgname=vmware-workstation
-version=25H2u1
+version=26H1
 revision=1
-_buildver=25219725
+_buildver=25388281
 _pkgver="${version}_${_buildver}"
 archs="x86_64"
 create_wrksrc=yes
-hostmakedepends="tar sqlite"
+hostmakedepends="sqlite"
 depends="fuse gcr gtk+ gtk+3 gtkmm libcanberra libaio pcsclite hicolor-icon-theme
  libxcrypt libxml2 vmware-workstation-dkms-${version}_${revision}"
 short_desc="Industry standard for running multiple OSes as VMs on a single Linux PC"
@@ -44,7 +44,7 @@ distfiles="
  https://packages-prod.broadcom.com/tools/frozen/windows/WindowsToolsVista/SP2/windows.iso>winVistaSP2.iso"
 
 checksum="
- 721aa93c4ebcaa51ac6db75ed97c7a4db10aa88110446890db1e40bfafc7566a
+ 3f6d2501e654dbc7701a8290ff6ffcfba6c5444cd5f35f4933cd08c9499f6d84
  4e66b286b743d9cf788c487295b1dec3c6071d657674f650aadc23e8900758ff
  aef8f747bd9a6e84d139c57b8c1f8e87c83a9b9df69cd09602030190fec21973
  2c89993d811f5d90f7b0e2a286e9339907055e51ecb16f25509e5c4517326487
@@ -159,17 +159,16 @@ do_install() {
 	vcopy "vmware-workstation/share/*" usr/share
 	vcopy vmware-workstation/man usr/share
 	vcopy "vmware-network-editor-ui/share/*" usr/share
-	vcopy "vmware-player-app/share/*" usr/share
+	vcopy "vmware-other-apps/share/*" usr/share
 
 	vcopy "vmware-workstation/bin/*" usr/bin
 	vcopy "vmware-vmx/bin/*" usr/bin
 	vcopy "vmware-vmx/sbin/*" usr/bin
 	vcopy "vmware-vix-core/bin/*" usr/bin
 	vcopy "vmware-vprobe/bin/*" usr/bin
-	vcopy "vmware-player-app/bin/*" usr/bin
 
 	vcopy "vmware-workstation/lib/*" usr/lib/vmware
-	vcopy "vmware-player-app/lib/*" usr/lib/vmware
+	vcopy "vmware-other-apps/lib/*" usr/lib/vmware
 	vcopy "vmware-vmx/lib/*" usr/lib/vmware
 	vcopy vmware-vmx/roms usr/lib/vmware
 	vcopy "vmware-vprobe/lib/*" usr/lib/vmware
@@ -239,11 +238,11 @@ do_install() {
 
 	for module in vmmon vmnet; do
 		_msg "Patching ${module} module for DKMS"
-		tar -xf "${extracted}/vmware-vmx/lib/modules/source/${module}.tar" \
+		bsdtar xf "${extracted}/vmware-vmx/lib/modules/source/${module}.tar" \
 				-C "${dkms_dir}"
 			patch -p2 --read-only=ignore \
 				--directory="${dkms_dir}/${module}-only" \
-				< "${FILESDIR}/${module}.patch"
+				< "${FILESDIR}/${module}.patch" >/dev/null
 	done
 
 	rm -r "${DESTDIR}/usr/lib/vmware/modules/source"
@@ -275,7 +274,6 @@ do_install() {
 	_msg "Adding symbolic links to appLoader"
 	for link in \
 		licenseTool \
-		vmplayer \
 		vmware \
 		vmware-app-control \
 		vmware-enter-serial \
@@ -313,8 +311,6 @@ do_install() {
 
 	vsed -i 's,@@BINARY@@,/usr/bin/vmware,' \
 		"${DESTDIR}/usr/share/applications/vmware-workstation.desktop"
-	vsed -i 's,@@BINARY@@,/usr/bin/vmplayer,' \
-		"${DESTDIR}/usr/share/applications/vmware-player.desktop"
 	vsed -i 's,@@BINARY@@,/usr/bin/vmware-netcfg,' \
 		"${DESTDIR}/usr/share/applications/vmware-netcfg.desktop"
 
@@ -323,7 +319,7 @@ do_install() {
 	    -i "${DESTDIR}/etc/vmware-installer/bootstrap"
 
 	### Environment variables ###
-	for program in vmware vmplayer vmware-tray; do
+	for program in vmware vmware-tray; do
 		vsed -e '/export PRODUCT_NAME/asource /etc/conf.d/vmware' \
 			-e 's/if "$BINDIR"\/vmware-modconfig --appname=.*/if true ||/' \
 			-i "${DESTDIR}/usr/bin/${program}"
@@ -358,8 +354,6 @@ do_install() {
 	_msg "Adding StartupWMClass attribute to the .desktop files"
 	vsed -i '/^StartupNotify=.*/a StartupWMClass=vmware' \
 		"${DESTDIR}/usr/share/applications/vmware-workstation.desktop"
-	vsed -i '/^StartupNotify=.*/a StartupWMClass=vmplayer' \
-		"${DESTDIR}/usr/share/applications/vmware-player.desktop"
 	vsed -i '/^StartupNotify=.*/a StartupWMClass=vmware-netcfg' \
 		"${DESTDIR}/usr/share/applications/vmware-netcfg.desktop"
 
