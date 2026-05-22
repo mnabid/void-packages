@@ -1,0 +1,3 @@
+site="https://antigravity.google/download"
+version="${version}.${_buildver}"
+pattern="antigravity/stable/\K[\d.]+-[\d]+(?=/linux-x64/Antigravity.+IDE\.tar\.gz)"
