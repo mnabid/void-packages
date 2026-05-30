@@ -1,0 +1,42 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -7,2 +7,3 @@
+ repository = "https://github.com/uutils/diffutils"
++autobins = false
+ 
+@@ -13,3 +14,7 @@
+-[[bin]]
+-name = "diffutils"
+-path = "src/main.rs"
++[[bin]]
++name = "diff"
++path = "src/bin/diff.rs"
++
++[[bin]]
++name = "cmp"
++path = "src/bin/cmp.rs"
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -1,5 +1,6 @@
+ pub mod cmp;
+ pub mod context_diff;
++pub mod diff;
+ pub mod ed_diff;
+ pub mod macros;
+ pub mod normal_diff;
+--- /dev/null
++++ b/src/bin/diff.rs
+@@ -0,0 +1,5 @@
++use std::process::ExitCode;
++
++fn main() -> ExitCode {
++    diffutilslib::diff::main(std::env::args_os().peekable())
++}
+--- /dev/null
++++ b/src/bin/cmp.rs
+@@ -0,0 +1,5 @@
++use std::process::ExitCode;
++
++fn main() -> ExitCode {
++    diffutilslib::cmp::main(std::env::args_os().peekable())
++}
