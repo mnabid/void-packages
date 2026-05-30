@@ -1,0 +1,22 @@
+# Template file for 'uutils-diffutils'
+pkgname=uutils-diffutils
+version=0.6.0
+revision=1
+build_style=cargo
+build_helper="rust"
+checkdepends="ed"
+short_desc="Rust implementation of GNU diffutils"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://github.com/uutils/diffutils"
+distfiles="https://github.com/uutils/diffutils/archive/refs/tags/v${version}.tar.gz"
+checksum=74f9c60ae86a63433bc82190e473b943057153d63f6ad39e646cc84350a3d9fa
+conflicts="diffutils"
+replaces="diffutils>=0"
+
+post_install() {
+	ln ${DESTDIR}/usr/bin/diffutils ${DESTDIR}/usr/bin/diff
+	ln ${DESTDIR}/usr/bin/diffutils ${DESTDIR}/usr/bin/cmp
+	vlicense LICENSE-MIT
+	vlicense LICENSE-APACHE
+}
