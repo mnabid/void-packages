@@ -1,0 +1,36 @@
+# Template file for 'uutils-findutils'
+pkgname=uutils-findutils
+version=0.11.0
+revision=1
+build_style=cargo
+build_helper="rust"
+make_check_args="-- --skip get_or_create_file_test"
+hostmakedepends="pkg-config"
+makedepends="oniguruma-devel rust-std"
+short_desc="Rust implementation of GNU findutils"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://github.com/uutils/findutils"
+distfiles="https://github.com/uutils/findutils/archive/refs/tags/${version}.tar.gz"
+checksum=43d1fbb69a0e67e708435bd104966d1dd61357755452b733db9dabfd66cbf974
+
+alternatives="
+ find:find:/usr/bin/ufind
+ xargs:xargs:/usr/bin/uxargs
+"
+
+if [ "$CROSS_BUILD" ]; then
+	hostmakedepends+=" oniguruma-devel"
+fi
+
+if [ "$XBPS_TARGET_LIBC" = musl ]; then
+	make_check_args+=" --skip newer_time_matcher"
+fi
+
+post_install() {
+	for _f in find locate updatedb xargs; do
+		mv "${DESTDIR}/usr/bin/${_f}" "${DESTDIR}/usr/bin/u${_f}"
+	done
+	rm ${DESTDIR}/usr/bin/testing-commandline
+	vlicense LICENSE
+}
