@@ -1,0 +1,19 @@
+# Template file for 'uutils-sed'
+pkgname=uutils-sed
+version=0.3.0
+revision=1
+build_style=cargo
+build_helper="rust"
+makedepends="rust-std"
+short_desc="Rust implementation of GNU sed"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://github.com/uutils/sed"
+distfiles="https://github.com/uutils/sed/archive/refs/tags/${version}.tar.gz"
+checksum=d879d292ff93f4f769f299fb183be69d3ea6bcedeb2a698d944595ebc3a8dd6c
+conflicts="sed"
+replaces="sed>=0"
+
+post_install() {
+	vlicense LICENSE
+}
