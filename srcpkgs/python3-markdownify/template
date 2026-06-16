@@ -1,0 +1,17 @@
+# Template file for 'python3-markdownify'
+pkgname=python3-markdownify
+version=1.2.3
+revision=1
+build_style=python3-pep517
+hostmakedepends="python3-setuptools_scm python3-wheel"
+depends="python3-BeautifulSoup4 python3-six"
+short_desc="Convert HTML to markdown"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://github.com/matthewwithanm/python-markdownify"
+distfiles="${PYPI_SITE}/m/markdownify/markdownify-${version}.tar.gz"
+checksum=1a176f05522c8a2cb1dd3ab9d307dcdadbed5c26ae717855bfc42b3b6d38d937
+
+post_install() {
+	vlicense LICENSE
+}
