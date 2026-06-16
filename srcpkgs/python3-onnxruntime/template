@@ -1,0 +1,23 @@
+# Template file for 'python3-onnxruntime'
+pkgname=python3-onnxruntime
+version=1.29.0
+revision=1
+archs="x86_64 aarch64"
+create_wrksrc=yes
+depends="python3-numpy python3-packaging python3-protobuf"
+short_desc="Cross-platform, high performance ML inferencing and training accelerator"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://onnxruntime.ai/"
+distfiles="https://files.pythonhosted.org/packages/py3/o/onnxruntime/onnxruntime-${version}-cp314-cp314t-manylinux_2_28_${XBPS_TARGET_MACHINE}.whl>onnxruntime-${version}-${XBPS_TARGET_MACHINE}.zip"
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=1ea91cef3b971506e51ae9c37c16d027774ec64994a524ec1bdfb027d68a9832 ;;
+	aarch64) checksum=11264bb58f7b7cf6af835ab10d36838d73680580820fd6f51d90124a1ca8f449 ;;
+esac
+
+do_install() {
+	vmkdir usr/lib/python3.14/site-packages
+	vcopy onnxruntime usr/lib/python3.14/site-packages
+	vlicense onnxruntime/LICENSE
+}
