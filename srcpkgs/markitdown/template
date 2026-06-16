@@ -1,0 +1,22 @@
+# Template file for 'markitdown'
+pkgname=markitdown
+version=0.1.7
+revision=1
+build_style=python3-pep517
+hostmakedepends="hatchling"
+depends="magika python3-BeautifulSoup4 python3-charset-normalizer python3-defusedxml
+ python3-lxml python3-markdownify python3-openpyxl python3-pandas
+ python3-pdfminer.six python3-pdfplumber python3-requests python3-xlrd"
+short_desc="Python tool for converting files and office documents to Markdown"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://github.com/microsoft/markitdown"
+distfiles="${PYPI_SITE}/m/markitdown/markitdown-${version}.tar.gz
+ https://raw.githubusercontent.com/microsoft/markitdown/main/LICENSE"
+checksum="4d1f3c69cd43b82288fdc3653686d759dcf355ee7c681aa6a855aed98a1e4f44
+ c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+skip_extraction="LICENSE"
+
+post_install() {
+	vlicense ${XBPS_SRCDISTDIR}/${pkgname}-${version}/LICENSE
+}
