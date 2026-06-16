@@ -1,0 +1,13 @@
+# Template file for 'magika'
+pkgname=magika
+version=1.0.3
+revision=1
+build_style=python3-pep517
+hostmakedepends="hatchling"
+depends="python3-click python3-numpy python3-onnxruntime python3-dotenv"
+short_desc="Fast and accurate AI powered file content types detection"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="Apache-2.0"
+homepage="https://github.com/google/magika"
+distfiles="${PYPI_SITE}/m/magika/magika-${version}.tar.gz"
+checksum=ad3216012f6dd337be34c23ae3dfab36f0623bc62fbfb329f9a1852c9ad40304
