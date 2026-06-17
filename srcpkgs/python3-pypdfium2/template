@@ -1,0 +1,25 @@
+# Template file for 'python3-pypdfium2'
+pkgname=python3-pypdfium2
+version=5.13.0
+revision=1
+archs="x86_64 aarch64"
+create_wrksrc=yes
+depends="python3"
+short_desc="Python bindings to PDFium"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="Apache-2.0 OR BSD-3-Clause"
+homepage="https://github.com/pypdfium2-team/pypdfium2"
+distfiles="https://files.pythonhosted.org/packages/py3/p/pypdfium2/pypdfium2-${version}-py3-none-manylinux_2_17_${XBPS_TARGET_MACHINE}.manylinux2014_${XBPS_TARGET_MACHINE}.whl>pypdfium2-${version}-${XBPS_TARGET_MACHINE}.zip"
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=81df25c1ab4c13ff773102d3cbea1967511d079123b067fc077bd0c4d57d91d8 ;;
+	aarch64) checksum=9ee8c2bb2e68b396ab4a763215ac100dacb6b96d0da5bebeb239a021aecc3a7e ;;
+esac
+
+do_install() {
+	vmkdir "${py3_sitelib}"
+	vcopy pypdfium2 "${py3_sitelib}"
+	vcopy pypdfium2-${version}.dist-info "${py3_sitelib}"
+	vlicense pypdfium2-${version}.dist-info/licenses/LICENSES/BSD-3-Clause.txt
+}
+
