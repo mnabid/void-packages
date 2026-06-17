@@ -1,0 +1,17 @@
+# Template file for 'python3-pdfplumber'
+pkgname=python3-pdfplumber
+version=0.11.10
+revision=1
+build_style=python3-pep517
+hostmakedepends="python3-setuptools python3-wheel"
+depends="python3-pdfminer.six python3-Pillow python3-pypdfium2"
+short_desc="Plumb a PDF for information to extract text and tables"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://github.com/jsvine/pdfplumber"
+distfiles="${PYPI_SITE}/p/pdfplumber/pdfplumber-${version}.tar.gz"
+checksum=b95b2d28c66efb0a794a83b88c6c6aea5987532a445d20a1cbcfa657022e6e57
+
+post_install() {
+	vlicense LICENSE.txt
+}
