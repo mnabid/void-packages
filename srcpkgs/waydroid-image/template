@@ -1,0 +1,63 @@
+# Template file for 'waydroid-image'
+pkgname=waydroid-image
+version=20.0.20261022
+revision=1
+archs="x86_64 i686 armv7l aarch64"
+short_desc="LineageOS-based Android images for Waydroid"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-only"
+homepage="https://waydro.id"
+
+build_options="gapps"
+desc_option_gapps="Include Google apps and services"
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64)
+		_arch="x86_64"
+		_ver_sys="20.0-20260927"
+		_ver_vendor="20.0-20261022"
+		_vanilla_hash="053552725bf4ae25e2d3f7e6f1947203294aa9d73dc17fe1f3abe646e5d3bd8a"
+		_gapps_hash="1d79df0b17ab8f79d66fd3b5f94500cc02f1abe149cf8caa391380092ede6e2a"
+		_vendor_hash="91663c337013145208b6c533d7e1fa2a915a9864ddc8fc56966f40cd759648ac"
+		;;
+	i686)
+		_arch="x86"
+		_ver_sys="20.0-20260927"
+		_ver_vendor="20.0-20261022"
+		_vanilla_hash="be42a16bc10ea14ce44e1fc67c046dd2d85171f03d135fd13fcddc6796951702"
+		_gapps_hash="7313b2a9a720c87a561c8de5b7566e4302b97963901a8a6b355c1c3ba88742f0"
+		_vendor_hash="fd5c3f915c74a1416ffe818415ab05b14a1e9f00314217078b357bb0fede7d3c"
+		;;
+	armv7l)
+		_arch="arm"
+		_ver_sys="20.0-20260927"
+		_ver_sys_gapps="20.0-20260926"
+		_ver_vendor="20.0-20261022"
+		_vanilla_hash="c36f1298165c572c803c0d76ed6086d37e7639dbb3d8bcec0f5e16984e494152"
+		_gapps_hash="97df844650a19089c33936b1e2d1c79a9443118d75c7cc22dce1d6ef160d788c"
+		_vendor_hash="c3e903a28f5e42c48a6e9bd6af5f70d9762a635cdddde1608e10c2622e6a78d5"
+		;;
+	aarch64)
+		_arch="arm64"
+		_ver_sys="20.0-20260927"
+		_ver_vendor="20.0-20261022"
+		_vanilla_hash="5fb8179ed4455f45919c5a2bfbfdd1591619295994ad321217f03bb1dcfc53a7"
+		_gapps_hash="a892171f65209078d44f4b85151143665d89ffecf0e6e1c189908937fca155e8"
+		_vendor_hash="89d5fb9a5c977adcc9fc7755483d3762c397b9c8579524f9d1df052b51c83fb3"
+		;;
+	*)
+		broken="Unsupported architecture"
+		;;
+esac
+
+distfiles="
+ ${SOURCEFORGE_SITE}/waydroid/images/system/lineage/waydroid_${_arch}/lineage-$(vopt_if gapps "${_ver_sys_gapps:-$_ver_sys}-GAPPS" "${_ver_sys}-VANILLA")-waydroid_${_arch}-system.zip
+ ${SOURCEFORGE_SITE}/waydroid/images/vendor/waydroid_${_arch}/lineage-${_ver_vendor}-MAINLINE-waydroid_${_arch}-vendor.zip"
+checksum="
+ $(vopt_if gapps "${_gapps_hash}" "${_vanilla_hash}")
+ ${_vendor_hash}"
+
+do_install() {
+	vinstall system.img 644 usr/share/waydroid-extra/images
+	vinstall vendor.img 644 usr/share/waydroid-extra/images
+}
