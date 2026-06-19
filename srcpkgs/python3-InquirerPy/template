@@ -1,0 +1,17 @@
+# Template file for 'python3-InquirerPy'
+pkgname=python3-InquirerPy
+version=0.3.4
+revision=1
+build_style=python3-pep517
+hostmakedepends="python3-poetry-core"
+depends="python3-pfzy python3-prompt_toolkit"
+short_desc="Python port of Inquirer.js"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT"
+homepage="https://github.com/kazhala/InquirerPy"
+distfiles="${PYPI_SITE}/I/InquirerPy/InquirerPy-${version}.tar.gz"
+checksum=89d2ada0111f337483cb41ae31073108b2ec1e618a49d7110b0d7ade89fc197e
+
+post_install() {
+	vlicense LICENSE
+}
