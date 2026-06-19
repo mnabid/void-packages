@@ -1,0 +1,26 @@
+# Template file for 'waydroid-script'
+pkgname=waydroid-script
+version=0.0.20260105
+revision=1
+_commit=d5289cfd8929e86e7f0dc89ecadcef8b66930eec
+depends="lzip python3-InquirerPy python3-requests python3-tqdm waydroid"
+short_desc="Script to add GAPPS, Magisk and translation tools to Waydroid"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-only"
+homepage="https://github.com/casualsnek/waydroid_script"
+distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
+checksum=c9c2f216ff73146004ff609bba6805519341894f8d3de42cd2e4cc3172509711
+noverifyrdeps=yes
+nostrip=yes
+
+do_install() {
+	vmkdir usr/bin
+	vmkdir usr/lib/waydroid-script
+
+	for _f in main.py bin stuff tools; do
+		vcopy ${_f} usr/lib/waydroid-script
+	done
+	chmod +x ${DESTDIR}/usr/lib/waydroid-script/main.py
+
+	ln -s /usr/lib/waydroid-script/main.py ${DESTDIR}/usr/bin/waydroid-extras
+}
