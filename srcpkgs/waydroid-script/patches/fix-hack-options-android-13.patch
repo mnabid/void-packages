@@ -1,0 +1,57 @@
+--- a/main.py
++++ b/main.py
+@@ -166,9 +166,9 @@
+     hack_list: List[General] = []
+     options = args.option_name
+     if "nodataperm" in options:
+-        hack_list.append(Nodataperm())
++        hack_list.append(Nodataperm(args.android_version))
+     if "hidestatusbar" in options:
+-        hack_list.append(HideStatusBar())
++        hack_list.append(HideStatusBar(args.android_version))
+
+     if not container.use_overlayfs():
+         copy_dir = "/tmp/waydroid"
+@@ -215,25 +215,31 @@
+     if not android_version:
+         exit()
+     args.android_version = android_version
++
++    install_choices = ["gapps", "microg", "libndk", "libhoudini", "magisk", "smartdock", "fdroidpriv", "widevine",]
++    hack_choices = []
++    if android_version=="11":
++        hack_choices.extend(["nodataperm", "hidestatusbar"])
++    elif android_version=="13":
++        hack_choices.extend(["nodataperm"])
++
++    action_choices = [
++        "Install",
++        "Remove",
++    ]
++    if hack_choices:
++        action_choices.append("Hack")
++    action_choices.append("Get Google Device ID to Get Certified")
++
+     action = inquirer.select(
+         message="Please select an action",
+-        choices=[
+-            "Install",
+-            "Remove",
+-            "Hack",
+-            "Get Google Device ID to Get Certified"
+-        ],
++        choices=action_choices,
+         instruction="([↑↓]: Select Item)",
+         default=None,
+     ).execute()
+     if not action:
+         exit()
+
+-    install_choices = ["gapps", "microg", "libndk", "libhoudini", "magisk", "smartdock", "fdroidpriv", "widevine",]
+-    hack_choices = []
+-    if android_version=="11":
+-        hack_choices.extend(["nodataperm", "hidestatusbar"])
+-
+     if action == "Install":
+         apps = inquirer.checkbox(
+             message="Select apps",
