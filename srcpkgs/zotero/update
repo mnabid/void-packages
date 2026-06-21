@@ -1,0 +1,2 @@
+site="https://www.zotero.org/support/changelog"
+pattern="Changes in \K[\d.]+"
