@@ -1,0 +1,37 @@
+# Template file for 'wps-zotero'
+pkgname=wps-zotero
+version=0.1.2
+revision=1
+hostmakedepends="python3"
+depends="python3"
+short_desc="WPS Writer add-on for integrating with Zotero"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="GPL-3.0-only"
+homepage="https://github.com/tankwyn/WPS-Zotero"
+distfiles="${homepage}/archive/refs/tags/${version}.tar.gz"
+checksum=c4972678f9e37bd4721165c9722a032331995dd1b7d037b7aa0fa78ed446b071
+
+do_install() {
+	local tmpdir="${XBPS_BUILDDIR}/tmpdir"
+	export HOME="${tmpdir}"
+	export USER="builder"
+	mkdir -p "${HOME}"
+	python3 install.py
+
+	vmkdir opt/kingsoft/wps-office/office6/jsaddons
+	local jsaddons_dir="${tmpdir}/.local/share/Kingsoft/wps/jsaddons"
+	cp -R "${jsaddons_dir}"/* "${DESTDIR}/opt/kingsoft/wps-office/office6/jsaddons/"
+
+	local dest_addon_dir="${DESTDIR}/opt/kingsoft/wps-office/office6/jsaddons/wps-zotero_${version}"
+	rm "${dest_addon_dir}"/windows*.bat
+	rm "${dest_addon_dir}"/LICENSE.txt
+	rm "${dest_addon_dir}"/readme.md
+	rm .gitignore
+
+	# Symlink for the runit service compatibility
+	vmkdir usr/share
+	ln -s /opt/kingsoft/wps-office/office6/jsaddons/wps-zotero_${version} ${DESTDIR}/usr/share/wps-zotero
+
+	vsv wps-zotero
+	vlicense LICENSE.txt
+}
