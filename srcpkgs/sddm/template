@@ -1,7 +1,7 @@
 # Template file for 'sddm'
 pkgname=sddm
 version=0.21.0
-revision=2
+revision=3
 build_style=cmake
 _configure_args="-DBUILD_MAN_PAGES=ON -DNO_SYSTEMD=ON -DUSE_ELOGIND=ON
  -DLOGIN_DEFS_PATH=${XBPS_SRCPKGDIR}/shadow/files/login.defs
@@ -32,7 +32,8 @@ sddm_groups="video"
 conf_files="
  /etc/pam.d/sddm
  /etc/pam.d/sddm-greeter
- /etc/pam.d/sddm-autologin"
+ /etc/pam.d/sddm-autologin
+ /etc/pam.d/sddm-fingerprint"
 make_dirs="/var/lib/sddm 0755 sddm sddm"
 
 post_configure() {
