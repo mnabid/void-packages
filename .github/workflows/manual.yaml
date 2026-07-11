@@ -1,0 +1,86 @@
+name: Manual build
+run-name: '${{ inputs.packages }} (${{ inputs.arch }})'
+
+on:
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: 'Packages and options to build, separated by semicolon (e.g., "pkg1 opt1,~opt2; pkg2")'
+        required: true
+        type: string
+      arch:
+        description: 'Target architecture'
+        required: true
+        type: choice
+        default: 'x86_64'
+        options:
+          - x86_64
+          - x86_64-musl
+          - i686
+          - i686-musl
+          - aarch64
+          - aarch64-musl
+          - armv7l
+          - armv7l-musl
+          - armv6l
+          - armv6l-musl
+      test:
+        description: 'Run package check/test suite (only for native builds)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    name: Build packages (${{ github.event.inputs.arch }})
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/void-linux/void-${{ contains(github.event.inputs.arch, 'musl') && 'musl' || 'glibc' }}-full
+      options: --platform ${{ startsWith(github.event.inputs.arch, 'i686') && 'linux/386' || 'linux/amd64' }} --privileged
+      volumes:
+        - /dev:/dev
+
+    steps:
+      - name: Prepare container
+        run: |
+          # switch to repo-ci mirror
+          mkdir -p /etc/xbps.d && cp /usr/share/xbps.d/*-repository-*.conf /etc/xbps.d/
+          sed -i 's|repo-default|repo-ci|g' /etc/xbps.d/*-repository-*.conf
+          # install dependencies
+          xbps-install -Syu xbps && xbps-install -yu && xbps-install -y sudo bash curl git python3
+          # create non-root user
+          useradd -G xbuilder -M builder
+
+      - name: Clone and checkout
+        uses: classabbyamp/treeless-checkout-action@v1
+
+      - name: Prepare masterdir
+        run: |
+          chown -R builder:builder .
+          sudo -Eu builder common/travis/set_mirror.sh
+          sudo -Eu builder common/travis/prepare.sh
+
+      - name: Build packages
+        run: |
+          sudo -Eu builder common/travis/manual-build.sh \
+            "${{ github.event.inputs.arch }}" \
+            "${{ github.event.inputs.test }}" \
+            "${{ github.event.inputs.packages }}"
+
+      - name: Upload main packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: void-packages-${{ github.event.inputs.arch }}-${{ github.run_id }}
+          path: |
+            hostdir/binpkgs/*
+            !hostdir/binpkgs/debug
+          if-no-files-found: error
+
+      - name: Upload debug packages
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: void-packages-debug-${{ github.event.inputs.arch }}-${{ github.run_id }}
+          path: hostdir/binpkgs/debug/*.xbps
+          if-no-files-found: ignore
