@@ -1,0 +1,18 @@
+# Template file for 'linux-cachyos'
+pkgname=linux-cachyos
+version=7.1
+revision=1
+metapackage=yes
+depends="linux${version}-cachyos linux-base"
+short_desc="Linux kernel meta package for CachyOS"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="Public Domain"
+homepage="https://github.com/CachyOS/linux-cachyos"
+
+subpackages="linux-cachyos-headers"
+
+linux-cachyos-headers_package() {
+	metapackage=yes
+	short_desc="Linux kernel headers meta package for CachyOS"
+	depends="linux${version}-cachyos-headers"
+}
