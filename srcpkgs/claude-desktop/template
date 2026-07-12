@@ -1,0 +1,58 @@
+# Template file for 'claude-desktop'
+pkgname=claude-desktop
+version=1.40609.0
+revision=1
+archs="x86_64 aarch64"
+create_wrksrc=yes
+depends="hicolor-icon-theme socat xdg-desktop-portal xdg-utils $(vopt_if sandbox 'virtiofsd')"
+short_desc="Desktop application for Claude.ai"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="custom:Proprietary"
+homepage="https://claude.com/download"
+repository=nonfree
+restricted=yes
+nostrip=yes
+
+build_options="sandbox"
+desc_option_sandbox="Enable Cowork sandbox support"
+
+case "$XBPS_TARGET_MACHINE" in
+x86_64)
+	distfiles="https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_${version}_amd64.deb"
+	checksum=a96e96ff8eb4d4d7ffa785aba7fc23f8684b12ac83ed2ef4060f0f09f4177a98
+	depends+=" $(vopt_if sandbox 'qemu-system-amd64 edk2-ovmf')"
+	;;
+aarch64)
+	distfiles="https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_${version}_arm64.deb"
+	checksum=c97e1aa0cd49437054b161bced1fea2ebfae60453e616d5b73524a9146421773
+	depends+=" $(vopt_if sandbox 'qemu-system-aarch64 edk2-ovmf')"
+	;;
+*)
+	broken="No distfiles available for this target"
+	;;
+esac
+
+do_install() {
+	vcopy usr .
+
+	# Fix permissions for SUID sandbox
+	chmod 4755 ${DESTDIR}/usr/lib/claude-desktop/chrome-sandbox
+
+	# Remove debian specific lintian file
+	rm -r ${DESTDIR}/usr/share/lintian
+
+	if [ "$build_option_sandbox" ]; then
+		# Cowork compatibility shims
+		# Void ships virtiofsd in /usr/libexec
+		ln -s ../libexec/virtiofsd ${DESTDIR}/usr/bin/virtiofsd
+
+		# EDK2 firmware paths
+		if [ "$XBPS_TARGET_MACHINE" = "x86_64" ]; then
+			vmkdir usr/share/edk2
+			ln -s x64/OVMF_CODE.4m.fd ${DESTDIR}/usr/share/edk2/OVMF_CODE_4M.fd
+			ln -s x64/OVMF_VARS.4m.fd ${DESTDIR}/usr/share/edk2/OVMF_VARS_4M.fd
+		fi
+	fi
+
+	vlicense usr/share/doc/claude-desktop/copyright
+}
