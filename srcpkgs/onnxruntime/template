@@ -3,6 +3,7 @@ pkgname=onnxruntime
 version=1.28.0
 revision=1
 build_style=cmake
+build_wrksrc=cmake
 configure_args="-DCMAKE_BUILD_TYPE=Release
  -Donnxruntime_BUILD_SHARED_LIB=ON
  -Donnxruntime_ENABLE_PYTHON=ON
@@ -16,8 +17,8 @@ short_desc="Cross-platform, high performance ML inferencing engine"
 maintainer="Nafis <mnabid.25@outlook.com>"
 license="MIT"
 homepage="https://onnxruntime.ai/"
-distfiles="https://github.com/microsoft/onnxruntime/archive/refs/tags/v${version}.tar.gz>onnxruntime-${version}.tar.gz"
-checksum=31ee13a8b89f2bfd0c58086258c15b11218a675e577d287d94acc20723b0ca0110458bfaf268d3e9140fe86e9a0fe3f89abbc2d6d347f8ea65624fc0716f14c1
+distfiles="https://github.com/microsoft/onnxruntime/archive/refs/tags/v${version}.tar.gz"
+checksum=9616cbdbbfcb1420b3261cd280a047d74ab0a249825e577b0e2dd310e22f6b83
 
 if [ "$XBPS_TARGET_LIBC" = "musl" ]; then
 	makedepends+=" libexecinfo-devel"
