@@ -1,6 +1,6 @@
 # Template file for 'linux-cachyos'
 pkgname=linux-cachyos
-version=7.1
+version=7.2
 revision=1
 metapackage=yes
 depends="linux${version}-cachyos linux-base"
