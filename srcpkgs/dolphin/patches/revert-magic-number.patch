@@ -1,0 +1,32 @@
+From 151ccab4df50815b469992336ecc1f10bea5020b Mon Sep 17 00:00:00 2001
+From: Akseli Lahtinen <akselmo@akselmo.dev>
+Date: Fri, 28 Aug 2026 10:35:26 +0300
+Subject: [PATCH] DolphinItemListView: Revert 16 to 48 in itemWidth
+
+Due to Dolphin relying on this magic number to keep text
+in icon view readable, lets revert it back.
+
+Added comment for future magicians.
+
+BUG: 523432
+---
+ src/views/dolphinitemlistview.cpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/views/dolphinitemlistview.cpp b/src/views/dolphinitemlistview.cpp
+index 83b81cf1aa..937733b9f2 100644
+--- a/src/views/dolphinitemlistview.cpp
++++ b/src/views/dolphinitemlistview.cpp
+@@ -213,7 +213,8 @@ void DolphinItemListView::updateGridSize()
+         // 9 is the average char width for 10pt Noto Sans, making fontFactor =1
+         // by each pixel the font gets larger the factor increases by 1/9
+         auto fontFactor = option.fontMetrics.averageCharWidth() / 9.0;
+-        itemWidth = 16 + IconsModeSettings::textWidthIndex() * 64 * fontFactor * zoomFactor;
++        // 48 is chosen as the magic number here to give more room for the text to be readable
++        itemWidth = 48 + IconsModeSettings::textWidthIndex() * 64 * fontFactor * zoomFactor;
+ 
+         if (itemWidth < iconSize + padding * 2 * zoomFactor) {
+             itemWidth = iconSize + padding * 2 * zoomFactor;
+-- 
+GitLab
+
