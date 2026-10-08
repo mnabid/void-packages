@@ -1,6 +1,6 @@
 # Template file for 'python3-pypdfium2'
 pkgname=python3-pypdfium2
-version=5.13.0
+version=5.14.0
 revision=1
 archs="x86_64 aarch64"
 create_wrksrc=yes
@@ -12,8 +12,8 @@ homepage="https://github.com/pypdfium2-team/pypdfium2"
 distfiles="https://files.pythonhosted.org/packages/py3/p/pypdfium2/pypdfium2-${version}-py3-none-manylinux_2_17_${XBPS_TARGET_MACHINE}.manylinux2014_${XBPS_TARGET_MACHINE}.whl>pypdfium2-${version}-${XBPS_TARGET_MACHINE}.zip"
 
 case "$XBPS_TARGET_MACHINE" in
-	x86_64) checksum=81df25c1ab4c13ff773102d3cbea1967511d079123b067fc077bd0c4d57d91d8 ;;
-	aarch64) checksum=9ee8c2bb2e68b396ab4a763215ac100dacb6b96d0da5bebeb239a021aecc3a7e ;;
+	x86_64) checksum=11f281613fa22313d9c7ab89947665e84eccf8ebe40e1198a84a88352305648d ;;
+	aarch64) checksum=f1b696e6901e16f114a2ec6332e5e3f8f5033a901614ead28499ab18ca6024f5 ;;
 esac
 
 do_install() {
