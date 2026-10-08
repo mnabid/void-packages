@@ -1,0 +1,48 @@
+# Template file for 'localsend'
+pkgname=localsend
+version=1.18.2
+revision=1
+archs="x86_64 aarch64"
+depends="xdg-user-dirs"
+short_desc="Open source cross-platform alternative to AirDrop"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="Apache-2.0"
+homepage="https://localsend.org"
+nostrip=yes
+skiprdeps="/opt/localsend_app/lib/libdartjni.so"
+
+case "$XBPS_TARGET_MACHINE" in
+x86_64)
+	distfiles="https://github.com/localsend/localsend/releases/download/v${version}/LocalSend-${version}-linux-x86-64.deb"
+	checksum=cc42a4f3eacdcb25ec31f0016b1272acb003145ab30484db8965450e20c72cd2
+	;;
+aarch64*)
+	distfiles="https://github.com/localsend/localsend/releases/download/v${version}/LocalSend-${version}-linux-arm-64.deb"
+	checksum=bbd8347b7979f936d3bae176a3f0d9b81431605707c585270d6240f7670feb1f
+	;;
+esac
+
+do_install() {
+	vcopy opt .
+
+	# Symlink executable
+	vmkdir usr/bin
+	ln -s /opt/localsend_app/localsend_app "${DESTDIR}/usr/bin/localsend"
+
+	# Install icons
+	vmkdir usr/share/icons
+	vcopy usr/share/icons/hicolor usr/share/icons
+
+	# Rename icons for compatibility with third-party icon themes
+	for res in 128x128 256x256; do
+		mv "${DESTDIR}/usr/share/icons/hicolor/${res}/apps/localsend_app.png" \
+			"${DESTDIR}/usr/share/icons/hicolor/${res}/apps/localsend.png"
+	done
+
+	# Install desktop entry
+	vinstall usr/share/applications/localsend_app.desktop 644 \
+		usr/share/applications localsend.desktop
+	vsed -i "${DESTDIR}/usr/share/applications/localsend.desktop" \
+		-e 's|localsend_app|localsend|' \
+		-e '/^Exec=localsend/a StartupWMClass=org.localsend.localsend_app'
+}
