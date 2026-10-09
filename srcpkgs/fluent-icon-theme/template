@@ -1,15 +1,15 @@
 # Template file for 'fluent-icon-theme'
 pkgname=fluent-icon-theme
-version=0.0.20260810
+version=0.0.20260830
 revision=1
-_commit=ad627380aa452aa5e18fd5fbab94291f409af710
+_commit=c8a244f571ef8fb47812bdc9dbce76546cedce69
 depends="hicolor-icon-theme"
 short_desc="Fluent icon theme for linux desktops"
 maintainer="Nafis <mnabid.25@outlook.com>"
 license="GPL-3.0-or-later"
 homepage="https://github.com/vinceliuice/Fluent-icon-theme"
 distfiles="${homepage}/archive/${_commit}.tar.gz>${pkgname}-${version}.tar.gz"
-checksum=e602cc6865d49aa60925bc69d687b65a95e93b0beddce98a02ee81922dc857a0
+checksum=07b6b593ab557e07f0a7cdb232cda99214af13fb74ad6ce1e77d666057647767
 nostrip=yes
 
 do_install() {
