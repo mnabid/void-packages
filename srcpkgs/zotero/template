@@ -1,6 +1,6 @@
 # Template file for 'zotero'
 pkgname=zotero
-version=10.0.4
+version=10.0.6
 revision=1
 archs="x86_64 i686 aarch64"
 short_desc="Your personal research assistant"
@@ -12,15 +12,15 @@ changelog="https://www.zotero.org/support/changelog"
 case "$XBPS_TARGET_MACHINE" in
 	x86_64)
 		distfiles="https://download.zotero.org/client/release/${version}/Zotero-${version}_linux-x86_64.tar.xz"
-		checksum=45f1d3900b927dfb16dec52e4e3fe8672042c7be94ec6b77ca7712b9ebc9c1b6
+		checksum=246c2574a9ac526abeaf3027ffd22fc45536a5ab25f227bb1df932fca9cedd63
 		;;
 	i686)
 		distfiles="https://download.zotero.org/client/release/${version}/Zotero-${version}_linux-i686.tar.xz"
-		checksum=5050bd9fe82a890e54c5afba98517742f7cc31ed459ebaa85748c68396199a90
+		checksum=246c2574a9ac526abeaf3027ffd22fc45536a5ab25f227bb1df932fca9cedd63
 		;;
 	aarch64)
 		distfiles="https://download.zotero.org/client/release/${version}/Zotero-${version}_linux-arm64.tar.xz"
-		checksum=67b2330ecb2d90614b3bd776d434215a80ec6dedc5bf0b7e6fa9d47b5b28d38d
+		checksum=0df2782926a70d2744286640262c9d3e81725bc68182c0d752d855a2b620ea60
 		;;
 	*)
 		broken="No distfiles available for this target"
