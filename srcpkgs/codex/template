@@ -1,6 +1,6 @@
 # Template file for 'codex'
 pkgname=codex
-version=0.151.0
+version=0.162.0
 revision=1
 build_style=cargo
 build_helper=qemu
@@ -13,7 +13,7 @@ maintainer="Nafis <mnabid.25@outlook.com>"
 license="Apache-2.0"
 homepage="https://github.com/openai/codex"
 distfiles="${homepage}/archive/refs/tags/rust-v${version}.tar.gz"
-checksum=17f37b9c2f98e00ce297b813355a1b41cd22882c3def89be84a250069bff0a02
+checksum=5bd933d190be3a98a700698b56620c9f83a195fdbb8a3751cba23e97f05ebe10
 make_check=no # tests require sandboxing and cause OOM compilation
 
 # Trim down build time and prevent OOM crashes
