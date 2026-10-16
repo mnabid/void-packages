@@ -1,0 +1,26 @@
+# Template file for 'deckcraft'
+pkgname=deckcraft
+version=0.7.0
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Slide deck and presentation designer"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/deckcraft"
+changelog="https://github.com/storytold/deckcraft/releases"
+distfiles="https://github.com/storytold/deckcraft/releases/download/v${version}/deckcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=330a2fb2ef8890daded91084e5bfd29dfa411e33a2b27c01ac3b9e520ff98d9f ;;
+	aarch64) checksum=cde1f7e27468e8e0da01bc954172aa66fbea57e719c09dc2320cf4f97b326d60 ;;
+esac
+
+do_install() {
+	vbin bin/deckcraft
+	vbin bin/deckcraft-cli
+	vcopy share usr/
+	vlicense share/doc/deckcraft/LICENSE-MIT
+	vlicense share/doc/deckcraft/LICENSE-APACHE
+}
