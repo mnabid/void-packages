@@ -1,0 +1,26 @@
+# Template file for 'vectorcraft'
+pkgname=vectorcraft
+version=0.12.0
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Vector graphics and illustration editor"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/vectorcraft"
+changelog="https://github.com/storytold/vectorcraft/releases"
+distfiles="https://github.com/storytold/vectorcraft/releases/download/v${version}/vectorcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=6750db109d3a253c51c82975af650f42384ba27a768f72529431edfb58508269 ;;
+	aarch64) checksum=f1e7a5c00ebc83d842bc57dcb35d7915fedb0996585ca2f27a9e1eb2a6956be8 ;;
+esac
+
+do_install() {
+	vbin bin/vectorcraft
+	vbin bin/vectorcraft-cli
+	vcopy share usr/
+	vlicense share/doc/vectorcraft/LICENSE-MIT
+	vlicense share/doc/vectorcraft/LICENSE-APACHE
+}
