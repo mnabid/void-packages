@@ -1,0 +1,26 @@
+# Template file for 'cadcraft'
+pkgname=cadcraft
+version=0.7.0
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Computer-aided design and 2D drafting application"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/cadcraft"
+changelog="https://github.com/storytold/cadcraft/releases"
+distfiles="https://github.com/storytold/cadcraft/releases/download/v${version}/cadcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=cf8d4aa86d046f34eb770ae6cd2df3eee17d1f3b129257f1558543046c955cc0 ;;
+	aarch64) checksum=15c3cb08735d91090c6507aaa2338094aa2aa4a38788872689c153b2e8f2f6ce ;;
+esac
+
+do_install() {
+	vbin bin/cadcraft
+	vbin bin/cadcraft-cli
+	vcopy share usr/
+	vlicense share/doc/cadcraft/LICENSE-MIT
+	vlicense share/doc/cadcraft/LICENSE-APACHE
+}
