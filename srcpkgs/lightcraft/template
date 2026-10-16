@@ -1,0 +1,26 @@
+# Template file for 'lightcraft'
+pkgname=lightcraft
+version=0.8.0
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Photo library management and raw image developer"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/lightcraft"
+changelog="https://github.com/storytold/lightcraft/releases"
+distfiles="https://github.com/storytold/lightcraft/releases/download/v${version}/lightcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=9fe0ecc69b7f1f3a35a1c630429b3c52fdb4419ba208b5579b4501b938f518d1 ;;
+	aarch64) checksum=ce563498ee01c16ba94520c823123e18c2e6d846edc58e7d1a0475828181c1c3 ;;
+esac
+
+do_install() {
+	vbin bin/lightcraft
+	vbin bin/lightcraft-cli
+	vcopy share usr/
+	vlicense share/doc/lightcraft/LICENSE-MIT
+	vlicense share/doc/lightcraft/LICENSE-APACHE
+}
