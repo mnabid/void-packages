@@ -1,0 +1,26 @@
+# Template file for 'soundcraft'
+pkgname=soundcraft
+version=0.7.0
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Digital audio workstation and sound design tool"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/soundcraft"
+changelog="https://github.com/storytold/soundcraft/releases"
+distfiles="https://github.com/storytold/soundcraft/releases/download/v${version}/soundcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=8d7afbe5fe433cb338b7ccee0820285d6ce1bfc8c006d551ca8840c27a911ab2 ;;
+	aarch64) checksum=5b5152464bd6a3ae6c48be026d80e0c4e0da58d581a45fe4b5803d6fcfbbe006 ;;
+esac
+
+do_install() {
+	vbin bin/soundcraft
+	vbin bin/soundcraft-cli
+	vcopy share usr/
+	vlicense share/doc/soundcraft/LICENSE-MIT
+	vlicense share/doc/soundcraft/LICENSE-APACHE
+}
