@@ -1,0 +1,26 @@
+# Template file for 'wordcraft'
+pkgname=wordcraft
+version=0.7.0
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Document and word processing editor"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/wordcraft"
+changelog="https://github.com/storytold/wordcraft/releases"
+distfiles="https://github.com/storytold/wordcraft/releases/download/v${version}/wordcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=63009f88e3dbaea70ac1378fabc8555ae14775d32829175c5da2551abe03932f ;;
+	aarch64) checksum=b5fce7f31bbbf38828c1714d7d43244ae85f034bbe761dfa401e044f976ba45e ;;
+esac
+
+do_install() {
+	vbin bin/wordcraft
+	vbin bin/wordcraft-cli
+	vcopy share usr/
+	vlicense share/doc/wordcraft/LICENSE-MIT
+	vlicense share/doc/wordcraft/LICENSE-APACHE
+}
