@@ -1,0 +1,26 @@
+# Template file for 'photocraft'
+pkgname=photocraft
+version=0.9.0
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Layer-based image and photo editor"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/photocraft"
+changelog="https://github.com/storytold/photocraft/releases"
+distfiles="https://github.com/storytold/photocraft/releases/download/v${version}/photocraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=91300c1485ad710839604b085531c90e77ac7ebdb2a30259309ad74afcfdb90d ;;
+	aarch64) checksum=c956084444653142dd25274cff08dbc17e8bf99815380db7f64eec026e882fc7 ;;
+esac
+
+do_install() {
+	vbin bin/photocraft
+	vbin bin/photocraft-cli
+	vcopy share usr/
+	vlicense share/doc/photocraft/LICENSE-MIT
+	vlicense share/doc/photocraft/LICENSE-APACHE
+}
