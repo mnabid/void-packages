@@ -1,0 +1,45 @@
+# Template file for 'HuionTablet'
+pkgname=HuionTablet
+version=15.0.0.193
+revision=1
+archs="x86_64"
+depends="libX11 libXext libXrandr libXtst libglvnd xdotool xmodmap xprop"
+short_desc="Driver and configuration utility for Huion graphics tablets"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="custom:Proprietary"
+homepage="https://www.huion.com"
+distfiles="https://driverdl.huion.com/driver/Linux/HuionTablet_LinuxDriver_v${version}.x86_64.deb"
+checksum=cc563c2358dd0ba13c245f97341d20fecfa8509bfa5c75c8258c895f48b6fa02
+repository=nonfree
+restricted=yes
+noshlibprovides=yes
+noverifyrdeps=yes
+nostrip=yes
+
+do_install() {
+	vmkdir opt
+	vcopy usr .
+	mv "${DESTDIR}/usr/lib/huiontablet" "${DESTDIR}/opt/HuionTablet"
+
+	# Remove bundled xdotool in favor of the system one
+	rm -r "${DESTDIR}/opt/HuionTablet/xdotool"
+
+	# Remove stray metadata, pid, and log files from upstream archive
+	find "${DESTDIR}/opt/HuionTablet" \( -name '._*' -o -name '.*.pid' -o -name '.*.log' \) -delete
+
+	# Update desktop files to point to /usr/bin/huiontablet
+	sed -i 's|/usr/lib/huiontablet/huiontablet.sh|/usr/bin/huiontablet|g' \
+		"${DESTDIR}/usr/share/applications/huiontablet.desktop"
+
+	# Install launcher in /usr/bin
+	vbin "${FILESDIR}/huiontablet.sh" huiontablet
+
+	# Include additional udev matches for devices named "HUION Huion Tablet Pen" / "HUION Huion Tablet"
+	cat >> "${DESTDIR}/usr/lib/udev/rules.d/20-huion.rules" <<-EOF
+		SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="HUION Huion Tablet Pen", MODE:="0666"
+		SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="HUION Huion Tablet", MODE:="0666"
+	EOF
+
+	# Install license details
+	vlicense "${FILESDIR}/LICENSE"
+}
