@@ -1,0 +1,9 @@
+HuionTablet is proprietary software.
+Copyright (C) Shenzhen Huion Animation Technology Co., Ltd. All Rights Reserved.
+
+Terms of Use: https://store.huion.com/pages/terms-of-use
+Privacy Policy: https://www.huion.com/privacy-policy.html
+
+Bundled third-party libraries (Qt, systemd, dbus, pcre, lzma, keyutils)
+are licensed under their respective open-source licenses as documented
+in /opt/HuionTablet/doc/ and /opt/HuionTablet/LGPL.
