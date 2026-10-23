@@ -1,0 +1,26 @@
+# Template file for 'designcraft'
+pkgname=designcraft
+version=0.12.0
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Page design and layout publishing application"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/designcraft"
+changelog="https://github.com/storytold/designcraft/releases"
+distfiles="https://github.com/storytold/designcraft/releases/download/v${version}/designcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=0e7bbe349670f8d5eb178fa9bd4a1bf1c7c51d6a54e1b802b8dcdbb2ae68fe1d ;;
+	aarch64) checksum=eb055f655ab26a137d5e46d63c6d7d91683148814766224a36de73ecbff7a6b3 ;;
+esac
+
+do_install() {
+	vbin bin/designcraft
+	vbin bin/designcraft-cli
+	vcopy share usr/
+	vlicense share/doc/designcraft/LICENSE-MIT
+	vlicense share/doc/designcraft/LICENSE-APACHE
+}
