@@ -1,0 +1,26 @@
+# Template file for 'pdfcraft'
+pkgname=pdfcraft
+version=0.13.0
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Document reader and PDF editor"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/pdfcraft"
+changelog="https://github.com/storytold/pdfcraft/releases"
+distfiles="https://github.com/storytold/pdfcraft/releases/download/v${version}/pdfcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=598519ea2bc77c66ca9a906241e1fe3eccf745f50627ce3cdbd5b5e675a456d3 ;;
+	aarch64) checksum=12efbe4c18d965c54b2b848aa4321880b967370443973b42a5ca4aa0d7959248 ;;
+esac
+
+do_install() {
+	vbin bin/pdfcraft
+	vbin bin/pdfcraft-cli
+	vcopy share usr/
+	vlicense share/doc/pdfcraft/LICENSE-MIT
+	vlicense share/doc/pdfcraft/LICENSE-APACHE
+}
