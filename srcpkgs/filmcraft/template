@@ -1,0 +1,26 @@
+# Template file for 'filmcraft'
+pkgname=filmcraft
+version=0.12.0
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Non-linear video editor"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/filmcraft"
+changelog="https://github.com/storytold/filmcraft/releases"
+distfiles="https://github.com/storytold/filmcraft/releases/download/v${version}/filmcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=ddff0a2ec0d89e5e9e65644ed724b5b79959600b1602fd4ea6653b5a54bf88fd ;;
+	aarch64) checksum=83714c4a73774a3f54a3d2bf52ae0065d3fb8ca8c781deb7cb3450f9b4e74568 ;;
+esac
+
+do_install() {
+	vbin bin/filmcraft
+	vbin bin/filmcraft-cli
+	vcopy share usr/
+	vlicense share/doc/filmcraft/LICENSE-MIT
+	vlicense share/doc/filmcraft/LICENSE-APACHE
+}
