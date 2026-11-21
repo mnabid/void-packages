@@ -1,0 +1,26 @@
+# Template file for 'gridcraft'
+pkgname=gridcraft
+version=0.19.1
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Spreadsheet and tabular data workspace"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/gridcraft"
+changelog="https://github.com/storytold/gridcraft/releases"
+distfiles="https://github.com/storytold/gridcraft/releases/download/v${version}/gridcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=8d97bba2d5bb00fd69ed55064852c1fd914de40d5ecd55ca01c8df81b828946d ;;
+	aarch64) checksum=c05373a366e6dded3201380cb82b3a0a137569a1b122d37c1b0ecf01cbd46b75 ;;
+esac
+
+do_install() {
+	vbin bin/gridcraft
+	vbin bin/gridcraft-cli
+	vcopy share usr/
+	vlicense share/doc/gridcraft/LICENSE-MIT
+	vlicense share/doc/gridcraft/LICENSE-APACHE
+}
