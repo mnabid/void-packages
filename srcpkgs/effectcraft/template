@@ -1,0 +1,26 @@
+# Template file for 'effectcraft'
+pkgname=effectcraft
+version=0.24.1
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Motion graphics and visual effects compositor"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/effectcraft"
+changelog="https://github.com/storytold/effectcraft/releases"
+distfiles="https://github.com/storytold/effectcraft/releases/download/v${version}/effectcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=5ce0393690144227fa9186e82308ad638a6ef6d9f976c996e6d03b5b51b65a7b ;;
+	aarch64) checksum=ad10c445065681760de9353117c6e2c45167eabcccf0ed19bde2f5c5ac908695 ;;
+esac
+
+do_install() {
+	vbin bin/effectcraft
+	vbin bin/effectcraft-cli
+	vcopy share usr/
+	vlicense share/doc/effectcraft/LICENSE-MIT
+	vlicense share/doc/effectcraft/LICENSE-APACHE
+}
