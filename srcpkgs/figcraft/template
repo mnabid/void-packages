@@ -1,0 +1,27 @@
+# Template file for 'figcraft'
+pkgname=figcraft
+version=0.18.1
+revision=1
+archs="x86_64 aarch64"
+depends="dbus libxkbcommon vulkan-loader xdg-utils"
+short_desc="Interface design and prototyping application"
+maintainer="Nafis <mnabid.25@outlook.com>"
+license="MIT OR Apache-2.0"
+homepage="https://getartcraft.com/apps/figcraft"
+changelog="https://github.com/storytold/figcraft/releases"
+distfiles="https://github.com/storytold/figcraft/releases/download/v${version}/figcraft-${version}-linux-${XBPS_TARGET_MACHINE}.tar.gz"
+nostrip=yes
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64) checksum=8276d2ac55c6f77f7af3a411a9b00415d3feb0b59607a54523311340e653fc19 ;;
+	aarch64) checksum=b27dee10be5db50def03dee3be470bc2f9ce508be1690e75b4765354d2b89c88 ;;
+esac
+
+do_install() {
+	vbin bin/figcraft
+	vbin bin/figcraft-cli
+	vcopy share usr/
+	vlicense share/doc/figcraft/LICENSE-MIT
+	vlicense share/doc/figcraft/LICENSE-APACHE
+}
+
